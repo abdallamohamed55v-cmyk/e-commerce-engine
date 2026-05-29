@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     const dodoApiKey = Deno.env.get('DODO_PAYMENTS_API_KEY');
     if (!dodoApiKey) {
       console.error('DODO_PAYMENTS_API_KEY is not configured');
-      return json({ error: 'Payment provider is not configured' }, 503);
+      return json({ error: 'Payment provider is not configured' });
     }
 
     const payload: Record<string, unknown> = {
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
       error: 'Dodo checkout failed',
       details: lastError,
       message: 'Check that DODO_PAYMENTS_API_KEY matches the Dodo environment for these products.',
-    }, 502);
+    });
   } catch (e) {
     console.error(e);
     return json({ error: String(e?.message || e) }, 500);
