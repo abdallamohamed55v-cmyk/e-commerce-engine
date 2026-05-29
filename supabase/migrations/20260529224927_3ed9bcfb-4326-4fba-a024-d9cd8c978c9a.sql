@@ -1,0 +1,1 @@
+UPDATE public.subscription_plans SET dodo_product_id = 'pdt_0Nfv2AAdPCcBjpMxaZYua' WHERE slug = 'lifetime';
