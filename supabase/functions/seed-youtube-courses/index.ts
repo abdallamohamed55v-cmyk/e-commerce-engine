@@ -30,7 +30,7 @@ function parseDuration(iso: string): number {
   return Math.max(1, Math.round((+(m[1] || 0)) * 60 + (+(m[2] || 0)) + (+(m[3] || 0)) / 60));
 }
 
-async function importPlaylist(admin: any, apiKey: string, playlistId: string, level: string) {
+async function importPlaylist(admin: any, apiKey: string, playlistId: string, level: string, lang: string = "ar") {
   const plRes = await fetch(`${YT_API}/playlists?part=snippet&id=${playlistId}&key=${apiKey}`);
   const plJson = await plRes.json();
   if (!plRes.ok || !plJson.items?.length) return { playlistId, status: "not_found" };
