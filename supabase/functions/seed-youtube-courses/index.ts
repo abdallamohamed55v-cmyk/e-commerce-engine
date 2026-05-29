@@ -104,7 +104,7 @@ async function importPlaylist(admin: any, apiKey: string, playlistId: string, le
     }).select().single();
     if (lesson) {
       await admin.from("lesson_translations").insert({
-        lesson_id: lesson.id, lang_code: "ar",
+        lesson_id: lesson.id, lang_code: lang,
         title: v.title,
         summary: v.description.slice(0, 280),
         content_markdown: v.description || v.title,
