@@ -114,8 +114,8 @@ export default function Auth() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <SocialButton icon={<Chrome className="w-4 h-4" />} label="Google" />
-            <SocialButton icon={<Github className="w-4 h-4" />} label="Github" />
+            <SocialButton icon={<Globe className="w-4 h-4" />} label="Google" />
+            <SocialButton icon={<Mail className="w-4 h-4" />} label="Email" />
           </div>
 
           <div className="relative">

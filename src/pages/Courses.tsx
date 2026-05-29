@@ -58,8 +58,8 @@ export default function Courses() {
         {/* Grid */}
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {visible.map((c) => {
-            const title = lang === "ar" ? (c as any).title_ar || c.title : c.title;
-            const desc  = lang === "ar" ? (c as any).description_ar || (c as any).description : (c as any).description;
+            const title = lang === "ar" ? c.ar.title : c.en.title;
+            const desc  = lang === "ar" ? c.ar.description : c.en.description;
             const img = getCourseImage(c.slug);
             return (
               <Link
@@ -94,16 +94,16 @@ export default function Courses() {
                     </p>
                   )}
                   <div className="mt-5 pt-4 border-t border-white/5 flex items-center gap-4 text-xs text-foreground/50">
-                    {(c as any).lessons?.length != null && (
+                    {c.lessons?.length != null && (
                       <span className="inline-flex items-center gap-1.5">
                         <BookOpen className="h-3.5 w-3.5" />
-                        {(c as any).lessons.length} {lang === "ar" ? "درس" : "lessons"}
+                        {c.lessons.length} {lang === "ar" ? "درس" : "lessons"}
                       </span>
                     )}
-                    {(c as any).duration_min != null && (
+                    {c.durationMinutes != null && (
                       <span className="inline-flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" />
-                        {(c as any).duration_min}m
+                        {c.durationMinutes}m
                       </span>
                     )}
                   </div>

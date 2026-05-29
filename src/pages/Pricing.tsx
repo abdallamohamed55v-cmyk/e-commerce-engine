@@ -25,11 +25,20 @@ export default function Pricing() {
 
   useEffect(() => {
     supabase
-      .from("plans")
+      .from("subscription_plans")
       .select("*")
-      .order("price_usd", { ascending: true })
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
       .then(({ data }) => {
-        if (data) setPlans(data as Plan[]);
+        if (data) {
+          setPlans(
+            (data as any[]).map((p) => ({
+              ...p,
+              features: Array.isArray(p.features) ? p.features : [],
+              features_ar: Array.isArray(p.features_ar) ? p.features_ar : [],
+            })) as Plan[],
+          );
+        }
       });
   }, []);
 
