@@ -18,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutCancel from "./pages/CheckoutCancel";
 import NotFound from "./pages/NotFound";
+import ImportCourse from "./pages/ImportCourse";
 
 const queryClient = new QueryClient();
 
