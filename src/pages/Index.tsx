@@ -51,9 +51,6 @@ export default function Index() {
         </div>
 
         <div className="relative max-w-5xl mx-auto px-6 pt-24 md:pt-32 pb-28 md:pb-40 text-center">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-blue-300/90 mb-5">
-            {isAr ? "منصة Shro.AI" : "Shro.AI"}
-          </p>
           <h1 className="text-4xl sm:text-6xl md:text-7xl tracking-tighter font-light leading-[1.05]">
             {isAr ? (
               <>
