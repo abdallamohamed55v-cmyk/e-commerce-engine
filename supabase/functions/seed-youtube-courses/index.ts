@@ -87,7 +87,7 @@ async function importPlaylist(admin: any, apiKey: string, playlistId: string, le
   if (cErr) return { playlistId, status: "course_error", error: cErr.message };
 
   await admin.from("course_translations").insert({
-    course_id: course.id, lang_code: "ar", title, description: desc,
+    course_id: course.id, lang_code: lang, title, description: desc,
   });
 
   for (let i = 0; i < meta.length; i++) {
