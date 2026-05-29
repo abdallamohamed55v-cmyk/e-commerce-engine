@@ -28,20 +28,24 @@ export function useSubscription() {
     setLoading(true);
     const loadSubscription = async () => {
       try {
-        const { data, error } = await supabase
-          .from("user_subscriptions")
-          .select("*, plan:subscription_plans(*)")
-          .eq("user_id", user.id)
-          .in("status", ["active", "trialing"])
-          .gt("current_period_end", new Date().toISOString())
-          .order("current_period_end", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const [activeResult, subscriptionResult] = await Promise.all([
+          supabase.rpc("has_active_subscription", { _user_id: user.id }),
+          supabase
+            .from("user_subscriptions")
+            .select("*, plan:subscription_plans(*)")
+            .eq("user_id", user.id)
+            .in("status", ["active", "trialing"])
+            .gt("current_period_end", new Date().toISOString())
+            .order("current_period_end", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
 
         if (cancelled) return;
-        if (error) console.error("Failed to load subscription", error);
-        setSub(data);
-        setActive(!!data);
+        if (activeResult.error) console.error("Failed to check subscription", activeResult.error);
+        if (subscriptionResult.error) console.error("Failed to load subscription", subscriptionResult.error);
+        setSub(subscriptionResult.data);
+        setActive(Boolean(activeResult.data || subscriptionResult.data));
         setLoading(false);
       } catch (error) {
         if (cancelled) return;
