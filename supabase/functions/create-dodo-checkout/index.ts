@@ -39,21 +39,31 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get('origin') || 'https://example.com';
 
-    const res = await fetch(`${DODO_API}/subscriptions`, {
+    // Lifetime plans are one-time charges, others are recurring subscriptions.
+    const endpoint = plan.interval === 'lifetime' ? '/payments' : '/subscriptions';
+
+    const payload: Record<string, unknown> = {
+      payment_link: true,
+      return_url: `${origin}/checkout/success`,
+      customer: { email: user.email, name: user.user_metadata?.display_name || user.email },
+      metadata: { user_id: user.id, plan_id: plan.id, interval: plan.interval },
+      billing: { country: 'US', state: 'CA', city: 'SF', street: 'N/A', zipcode: '00000' },
+    };
+
+    if (plan.interval === 'lifetime') {
+      payload.product_cart = [{ product_id: plan.dodo_product_id, quantity: 1 }];
+    } else {
+      payload.product_id = plan.dodo_product_id;
+      payload.quantity = 1;
+    }
+
+    const res = await fetch(`${DODO_API}${endpoint}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('DODO_PAYMENTS_API_KEY')}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        product_id: plan.dodo_product_id,
-        quantity: 1,
-        payment_link: true,
-        return_url: `${origin}/checkout/success`,
-        customer: { email: user.email, name: user.user_metadata?.display_name || user.email },
-        metadata: { user_id: user.id, plan_id: plan.id },
-        billing: { country: 'US', state: 'CA', city: 'SF', street: 'N/A', zipcode: '00000' },
-      }),
+      body: JSON.stringify(payload),
     });
 
     const body = await res.json();
@@ -62,7 +72,10 @@ Deno.serve(async (req) => {
       return json({ error: body?.message || 'Dodo checkout failed', details: body }, 500);
     }
 
-    return json({ checkout_url: body.payment_link, subscription_id: body.subscription_id });
+    return json({
+      checkout_url: body.payment_link,
+      subscription_id: body.subscription_id ?? body.payment_id,
+    });
   } catch (e) {
     console.error(e);
     return json({ error: String(e?.message || e) }, 500);
