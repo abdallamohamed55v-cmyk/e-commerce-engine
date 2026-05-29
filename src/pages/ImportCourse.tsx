@@ -43,7 +43,7 @@ export default function ImportCourse() {
   return (
     <div className="container max-w-2xl mx-auto py-12 px-4">
       <div className="flex items-center gap-3 mb-6">
-        <Youtube className="h-8 w-8 text-red-500" />
+        <Video className="h-8 w-8 text-red-500" />
         <h1 className="text-3xl font-bold">استيراد كورس من YouTube</h1>
       </div>
 
