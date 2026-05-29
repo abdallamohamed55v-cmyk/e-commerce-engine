@@ -193,7 +193,7 @@ function Header() {
   return (
     <header className="w-full py-5 px-8 flex items-center justify-between border-b border-white/5">
       <Link to="/" className="font-display text-xl tracking-tight">
-        Power<span className="opacity-70">AI</span>
+        sh<span className="text-purple-400">r</span>o
       </Link>
       <nav className="hidden md:flex items-center gap-7 text-sm text-foreground/80">
         <Link to="/courses" className="hover:text-foreground">Courses</Link>
