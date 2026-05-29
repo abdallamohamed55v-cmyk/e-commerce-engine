@@ -12,6 +12,11 @@ import LessonView from "./pages/LessonView";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import ResetPassword from "./pages/ResetPassword";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
+import CheckoutCancel from "./pages/CheckoutCancel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,8 +35,13 @@ const App = () => (
             <Route path="/courses/:slug" element={<CourseDetail />} />
             <Route path="/courses/:slug/lessons/:lessonSlug" element={<LessonView />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/cancel" element={<CheckoutCancel />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
