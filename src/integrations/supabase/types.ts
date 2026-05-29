@@ -307,6 +307,10 @@ export type Database = {
           id: string
           slug: string
           sort_order: number
+          thumbnail_url: string | null
+          video_id: string | null
+          video_provider: string | null
+          video_url: string | null
         }
         Insert: {
           course_id: string
@@ -315,6 +319,10 @@ export type Database = {
           id?: string
           slug: string
           sort_order?: number
+          thumbnail_url?: string | null
+          video_id?: string | null
+          video_provider?: string | null
+          video_url?: string | null
         }
         Update: {
           course_id?: string
@@ -323,6 +331,10 @@ export type Database = {
           id?: string
           slug?: string
           sort_order?: number
+          thumbnail_url?: string | null
+          video_id?: string | null
+          video_provider?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
