@@ -25,7 +25,7 @@ const STATS = [
 
 export default function Index() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { lang } = useLang();
+  const lang = useLang();
   const isAr = lang === "ar";
 
   useEffect(() => {
