@@ -132,25 +132,6 @@ export default function Courses() {
         )}
       </section>
 
-      {/* CTA */}
-      <section className="border-t border-white/5 mt-12">
-        <div className="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <h2 className="text-2xl md:text-3xl tracking-tighter font-light">
-              {isAr ? "اشتراك واحد. كل الكورسات." : "One membership. Every course."}
-            </h2>
-            <p className="mt-2 text-white/60 text-sm">
-              {isAr ? "ابدأ بـ 14 يوم تجربة مجانية." : "Start with a 14-day free trial."}
-            </p>
-          </div>
-          <Link
-            to="/pricing"
-            className="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition self-start"
-          >
-            {isAr ? "اعرض الخطط" : "View plans"}
-          </Link>
-        </div>
-      </section>
     </SiteShell>
   );
 }
