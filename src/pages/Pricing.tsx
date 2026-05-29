@@ -89,7 +89,7 @@ export default function Pricing() {
             {isAr ? "لا توجد خطط متاحة" : "No plans available."}
           </div>
         ) : (
-          <div className={`grid gap-6 ${filtered.length === 1 ? "max-w-md mx-auto" : "md:grid-cols-2"}`}>
+          <div className={`grid gap-6 ${filtered.length === 1 ? "max-w-md mx-auto" : "md:grid-cols-3"}`}>
             {filtered.map((p) => {
               const features = isAr ? p.features_ar : p.features;
               const isLifetime = p.interval === "lifetime";
