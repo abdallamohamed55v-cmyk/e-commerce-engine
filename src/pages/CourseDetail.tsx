@@ -10,8 +10,8 @@ export default function CourseDetail() {
   const { slug } = useParams();
   const lang = useLang();
   const isAr = lang === "ar";
-  const { user } = useAuth();
-  const { active } = useSubscription();
+  const { user, loading: authLoading } = useAuth();
+  const { active, loading: subscriptionLoading } = useSubscription();
   const course = getCourse(slug || "");
 
   if (!course) return <Navigate to="/courses" />;
@@ -93,7 +93,15 @@ export default function CourseDetail() {
                 return (
                   <Link
                     key={lesson.slug}
-                    to={active ? `/courses/${course.slug}/lessons/${lesson.slug}` : "/pricing"}
+                    to={
+                      authLoading || subscriptionLoading || active === null
+                        ? "#"
+                        : active
+                        ? `/courses/${course.slug}/lessons/${lesson.slug}`
+                        : user
+                        ? "/pricing"
+                        : "/auth?redirect=/pricing"
+                    }
                     className="flex items-center gap-4 p-4 rounded-2xl border border-white/5 hover:border-white/15 hover:bg-white/[0.03] transition group"
                   >
                     <span className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs tabular-nums text-white/60">
@@ -107,7 +115,9 @@ export default function CourseDetail() {
                       {lesson.durationMinutes}m
                     </span>
                     <span className={`text-[10px] uppercase tracking-wider ${active ? "text-blue-300" : "text-white/30"}`}>
-                      {active ? (isAr ? "افتح" : "Open") : (isAr ? "مغلق" : "Locked")}
+                      {authLoading || subscriptionLoading || active === null
+                        ? isAr ? "تحميل" : "Loading"
+                        : active ? (isAr ? "افتح" : "Open") : (isAr ? "مغلق" : "Locked")}
                     </span>
                   </Link>
                 );
@@ -119,7 +129,11 @@ export default function CourseDetail() {
         {/* Sidebar */}
         <aside className="md:sticky md:top-24 self-start">
           <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6">
-            {active ? (
+            {authLoading || subscriptionLoading || active === null ? (
+              <div className="py-8 text-center text-sm text-white/50">
+                {isAr ? "جاري التحقق من الاشتراك..." : "Checking subscription..."}
+              </div>
+            ) : active ? (
               <>
                 <p className="text-xs uppercase tracking-widest text-green-400/80 mb-3">
                   {isAr ? "مفتوح" : "Unlocked"}
