@@ -76,11 +76,11 @@ export default function Auth() {
         >
           <motion.div variants={item} className="flex items-center gap-2">
             <Circle className="w-5 h-5 fill-white text-white" />
-            <span className="text-xl font-semibold tracking-tight">Aurora</span>
+            <span className="text-xl font-semibold tracking-tight">shro</span>
           </motion.div>
 
           <motion.div variants={item}>
-            <h2 className="text-4xl font-medium tracking-tight whitespace-nowrap">Join Aurora</h2>
+            <h2 className="text-4xl font-medium tracking-tight whitespace-nowrap">Join shro</h2>
             <p className="text-white/60 text-sm leading-relaxed px-4 mt-3">
               Follow these 3 quick phases to activate your space.
             </p>
