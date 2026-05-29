@@ -4,26 +4,9 @@ import SiteShell from "@/components/SiteShell";
 import { useLang } from "@/hooks/useLang";
 import { courses, CATEGORIES } from "@/content";
 import { getCourseImage } from "@/content/courseImages";
-import {
-  ArrowUpRight,
-  Brain,
-  Code,
-  BookOpen,
-  Briefcase,
-  Sparkles,
-  Check,
-  Play,
-} from "lucide-react";
 
 const HERO_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4";
-
-const ICONS: Record<string, typeof Brain> = {
-  ai: Brain,
-  programming: Code,
-  psychology: BookOpen,
-  business: Briefcase,
-};
 
 export default function Index() {
   const lang = useLang();
@@ -94,16 +77,14 @@ export default function Index() {
           <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               to="/pricing"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
             >
               {isAr ? "ابدأ الاشتراك" : "Start membership"}
-              <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Link
               to="/courses"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-sm hover:bg-white/10 backdrop-blur"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white/5 border border-white/10 text-sm hover:bg-white/10 backdrop-blur"
             >
-              <Play className="h-3.5 w-3.5" />
               {isAr ? "تصفّح المكتبة" : "Browse library"}
             </Link>
           </div>
@@ -141,7 +122,6 @@ export default function Index() {
           </div>
           <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             {CATEGORIES.map((cat) => {
-              const Icon = ICONS[cat.key] || Brain;
               const count = courses.filter((c) => c.category === cat.key).length;
               return (
                 <Link
@@ -149,9 +129,9 @@ export default function Index() {
                   to={`/courses`}
                   className="group p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition"
                 >
-                  <div className="w-10 h-10 rounded-full bg-blue-400/10 border border-blue-400/30 flex items-center justify-center mb-4">
-                    <Icon className="h-5 w-5 text-blue-300" />
-                  </div>
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-blue-400/70 mb-3">
+                    {String(CATEGORIES.indexOf(cat) + 1).padStart(2, "0")}
+                  </p>
                   <h3 className="text-lg font-medium tracking-tight">
                     {isAr ? cat.ar : cat.en}
                   </h3>
@@ -178,10 +158,9 @@ export default function Index() {
           </div>
           <Link
             to="/courses"
-            className="text-sm text-white/60 hover:text-white inline-flex items-center gap-1"
+            className="text-sm text-white/60 hover:text-white"
           >
             {isAr ? "كل الكورسات" : "All courses"}
-            <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
@@ -280,7 +259,9 @@ export default function Index() {
       {/* PRICING TEASER */}
       <section className="max-w-5xl mx-auto px-6 py-20">
         <div className="rounded-3xl border border-blue-400/30 bg-gradient-to-br from-blue-500/[0.08] to-transparent p-10 md:p-14 text-center">
-          <Sparkles className="h-6 w-6 text-blue-300 mx-auto mb-4" />
+          <p className="text-[11px] uppercase tracking-[0.3em] text-blue-300/90 mb-4">
+            {isAr ? "العضوية" : "Membership"}
+          </p>
           <h2 className="text-3xl md:text-5xl tracking-tighter font-light max-w-2xl mx-auto">
             {isAr
               ? "ابدأ بأقل من قهوتك الأسبوعية."
@@ -299,19 +280,17 @@ export default function Index() {
             ].map((f) => (
               <li
                 key={f}
-                className="flex items-center justify-center gap-2 text-white/75"
+                className="text-white/75 text-center"
               >
-                <Check className="h-4 w-4 text-blue-400" />
                 {f}
               </li>
             ))}
           </ul>
           <Link
             to="/pricing"
-            className="mt-9 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
+            className="mt-9 inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
           >
             {isAr ? "اعرض الخطط" : "View plans"}
-            <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
       </section>

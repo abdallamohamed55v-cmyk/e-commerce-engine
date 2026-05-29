@@ -3,7 +3,6 @@ import { useState, useMemo } from "react";
 import { courses, CATEGORIES } from "@/content";
 import { getCourseImage } from "@/content/courseImages";
 import type { CourseCategory } from "@/content";
-import { Clock, BookOpen, Search, ArrowUpRight } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import SiteShell from "@/components/SiteShell";
 
@@ -69,13 +68,12 @@ export default function Courses() {
             })}
           </div>
 
-          <div className="relative md:w-72">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+          <div className="md:w-72">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={isAr ? "ابحث عن كورس..." : "Search courses..."}
-              className="w-full bg-white/5 border border-white/10 rounded-full ps-10 pe-4 py-2 text-sm placeholder:text-white/40 focus:outline-none focus:border-white/30 transition"
+              className="w-full bg-white/5 border border-white/10 rounded-full px-5 py-2 text-sm placeholder:text-white/40 focus:outline-none focus:border-white/30 transition"
             />
           </div>
         </div>
@@ -113,20 +111,10 @@ export default function Courses() {
                       </span>
                     </div>
 
-                    <div className="absolute top-4 end-4 w-9 h-9 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                      <ArrowUpRight className="h-4 w-4" />
-                    </div>
-
                     <div className="absolute bottom-4 start-4 end-4 flex items-center gap-3 text-[11px] text-white/70">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {Math.round(c.durationMinutes / 60)}h
-                      </span>
+                      <span>{Math.round(c.durationMinutes / 60)}h</span>
                       <span className="w-px h-3 bg-white/20" />
-                      <span className="inline-flex items-center gap-1">
-                        <BookOpen className="h-3 w-3" />
-                        {c.lessons.length} {isAr ? "درس" : "lessons"}
-                      </span>
+                      <span>{c.lessons.length} {isAr ? "درس" : "lessons"}</span>
                       <span className="w-px h-3 bg-white/20" />
                       <span className="uppercase tracking-wider text-white/60">{c.level}</span>
                     </div>
@@ -160,10 +148,9 @@ export default function Courses() {
           </div>
           <Link
             to="/pricing"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition self-start"
+            className="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition self-start"
           >
             {isAr ? "اعرض الخطط" : "View plans"}
-            <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
       </section>

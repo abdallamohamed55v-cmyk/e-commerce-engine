@@ -7,7 +7,6 @@ import { useLang } from "@/hooks/useLang";
 import { courses } from "@/content";
 import { getCourseImage } from "@/content/courseImages";
 import SiteShell from "@/components/SiteShell";
-import { ArrowUpRight, Check } from "lucide-react";
 
 export default function Account() {
   const lang = useLang();
@@ -38,15 +37,28 @@ export default function Account() {
   const totalDone = progress.length;
   const totalLessons = courses.reduce((acc, c) => acc + c.lessons.length, 0);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
   return (
     <SiteShell>
-      <section className="max-w-5xl mx-auto px-6 pt-16 pb-10">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-3">
-          {isAr ? "حسابي" : "My account"}
-        </p>
-        <h1 className="text-4xl md:text-5xl tracking-tighter font-light">
-          {isAr ? `أهلاً، ${user.email?.split("@")[0]}` : `Hello, ${user.email?.split("@")[0]}`}
-        </h1>
+      <section className="max-w-5xl mx-auto px-6 pt-16 pb-10 flex items-end justify-between flex-wrap gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-3">
+            {isAr ? "حسابي" : "My account"}
+          </p>
+          <h1 className="text-4xl md:text-5xl tracking-tighter font-light">
+            {isAr ? `أهلاً، ${user.email?.split("@")[0]}` : `Hello, ${user.email?.split("@")[0]}`}
+          </h1>
+        </div>
+        <button
+          onClick={handleSignOut}
+          className="text-xs text-white/50 hover:text-white px-4 py-2 rounded-full border border-white/10 hover:border-white/25 transition"
+        >
+          {isAr ? "تسجيل الخروج" : "Sign out"}
+        </button>
       </section>
 
       <section className="max-w-5xl mx-auto px-6 grid md:grid-cols-3 gap-4 mb-10">
@@ -91,8 +103,7 @@ export default function Account() {
                       ).toLocaleDateString()}`}
                 </p>
               </div>
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-400/30 text-green-300 text-xs">
-                <Check className="h-3 w-3" />
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-green-500/10 border border-green-400/30 text-green-300 text-xs uppercase tracking-wider">
                 {isAr ? "نشط" : "Active"}
               </span>
             </div>
@@ -108,10 +119,9 @@ export default function Account() {
               </div>
               <Link
                 to="/pricing"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
               >
                 {isAr ? "اعرض الخطط" : "View plans"}
-                <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
           )}
@@ -153,7 +163,6 @@ export default function Account() {
                 <span className="text-xs text-white/50 tabular-nums shrink-0">
                   {done}/{c.lessons.length}
                 </span>
-                <ArrowUpRight className="h-4 w-4 text-white/30 group-hover:text-white transition" />
               </Link>
             );
           })}

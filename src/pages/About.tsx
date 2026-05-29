@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useLang } from "@/hooks/useLang";
 import SiteShell from "@/components/SiteShell";
 import { courses } from "@/content";
-import { Sparkles, Brain, Code, BookOpen, ArrowUpRight } from "lucide-react";
 
 export default function About() {
   const lang = useLang();
@@ -15,17 +14,17 @@ export default function About() {
 
   const pillars = [
     {
-      icon: Brain,
+      n: "01",
       en: { title: "Depth over hype", body: "We teach how things actually work — not just the trendy headlines." },
       ar: { title: "العمق قبل الضجيج", body: "بنشرح إزاي الحاجات بتشتغل فعلاً — مش بس العناوين الرنّانة." },
     },
     {
-      icon: Code,
+      n: "02",
       en: { title: "Build to learn", body: "Every course ends with a real project you can show." },
       ar: { title: "اتعلم بالتطبيق", body: "كل كورس بينتهي بمشروع حقيقي تقدر تعرضه." },
     },
     {
-      icon: Sparkles,
+      n: "03",
       en: { title: "Bilingual, no compromise", body: "Arabic and English content with the same quality bar." },
       ar: { title: "بالعربي والإنجليزي", body: "نفس مستوى الجودة في اللغتين." },
     },
@@ -56,18 +55,15 @@ export default function About() {
       </section>
 
       <section className="max-w-5xl mx-auto px-6 py-16 grid md:grid-cols-3 gap-6">
-        {pillars.map((p, i) => {
-          const Icon = p.icon;
+        {pillars.map((p) => {
           const t = isAr ? p.ar : p.en;
           return (
             <div
-              key={i}
+              key={p.n}
               className="rounded-3xl border border-white/10 bg-white/[0.02] p-6"
             >
-              <div className="w-10 h-10 rounded-full bg-blue-400/10 border border-blue-400/30 flex items-center justify-center mb-4">
-                <Icon className="h-5 w-5 text-blue-300" />
-              </div>
-              <h3 className="text-lg font-light tracking-tight">{t.title}</h3>
+              <p className="text-xs text-blue-400/80 tracking-widest">{p.n}</p>
+              <h3 className="mt-3 text-lg font-light tracking-tight">{t.title}</h3>
               <p className="mt-2 text-sm text-white/55 leading-relaxed">{t.body}</p>
             </div>
           );
@@ -87,17 +83,15 @@ export default function About() {
           <div className="flex gap-3">
             <Link
               to="/courses"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/10 text-sm hover:bg-white/10"
+              className="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/5 border border-white/10 text-sm hover:bg-white/10"
             >
-              <BookOpen className="h-4 w-4" />
               {isAr ? "الكورسات" : "Courses"}
             </Link>
             <Link
               to="/pricing"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
+              className="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
             >
               {isAr ? "اشترك" : "Join"}
-              <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
