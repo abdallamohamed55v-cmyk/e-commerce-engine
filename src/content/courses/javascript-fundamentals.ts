@@ -1,0 +1,50 @@
+import type { Course } from "../types";
+
+const course: Course = {
+  slug: "javascript-fundamentals",
+  level: "beginner",
+  durationMinutes: 420,
+  accentColor: "#f7df1e",
+  coverGradient: "from-yellow-400 via-amber-500 to-orange-500",
+  icon: "Braces",
+  category: "programming",
+  en: {
+    title: "JavaScript Fundamentals",
+    tagline: "The programming language of the web — explained clearly.",
+    description: "Free curated lessons from freeCodeCamp (English) and Elzero Web School (Arabic). Variables, functions, arrays, objects, async/await, and the DOM.",
+    learningOutcomes: ["Read and write modern JavaScript", "Manipulate the DOM", "Use async/await for APIs", "Build interactive UIs"],
+    prerequisites: ["Basic HTML & CSS"],
+  },
+  ar: {
+    title: "أساسيات الجافاسكريبت",
+    tagline: "لغة برمجة الويب — مشروحة بوضوح.",
+    description: "دروس مجانية مختارة من freeCodeCamp و Elzero Web School. متغيرات، دوال، arrays، objects، async/await، و الـDOM.",
+    learningOutcomes: ["اقرأ و اكتب JavaScript حديث", "تعامل مع الـDOM", "استخدم async/await للـAPIs", "ابني واجهات تفاعلية"],
+    prerequisites: ["HTML و CSS أساسي"],
+  },
+  lessons: [
+    { slug: "variables-and-types", durationMinutes: 30, video: { en: { youtubeId: "PkZNo7MFNFg", sourceName: "freeCodeCamp", sourceUrl: "https://www.youtube.com/@freecodecamp" }, ar: { youtubeId: "GM6dQBmc-Xg", sourceName: "Elzero Web School", sourceUrl: "https://www.youtube.com/@ElzeroWebSchool" } },
+      en: { title: "Variables, let/const & Types", summary: "How JS stores data.", content: `# Variables & Types\n\n\`\`\`js\nconst name = "Sara";\nlet age = 28;\nconst isAdmin = true;\n\`\`\`\n\nPrimitive types: string, number, boolean, null, undefined, bigint, symbol.\nReference types: object, array, function.` },
+      ar: { title: "المتغيرات، let/const و الأنواع", summary: "إزاي JS بيخزّن البيانات.", content: `# المتغيرات و الأنواع\n\n\`\`\`js\nconst name = "Sara";\nlet age = 28;\nconst isAdmin = true;\n\`\`\`\n\nأنواع أولية: string, number, boolean, null, undefined, bigint, symbol.\nأنواع مرجعية: object, array, function.` },
+      quiz: [{ correctIndex: 1, en: { question: "Which keyword creates a constant binding?", options: ["let", "const", "var", "static"], explanation: "const cannot be reassigned." }, ar: { question: "أنهي كلمة بتعرّف ثابت؟", options: ["let", "const", "var", "static"], explanation: "const ميقدرش يتعاد تعيينه." } }] },
+    { slug: "functions", durationMinutes: 40, video: { en: { youtubeId: "xUI5Tsl2JpY", sourceName: "Web Dev Simplified", sourceUrl: "https://www.youtube.com/@WebDevSimplified" } },
+      en: { title: "Functions & Arrow Functions", summary: "Reusable blocks of behavior.", content: `# Functions\n\n\`\`\`js\nfunction add(a, b) { return a + b; }\nconst multiply = (a, b) => a * b;\n\`\`\`\n\nArrow functions don't have their own \`this\`.` },
+      ar: { title: "الدوال و Arrow Functions", summary: "كتل سلوك قابلة لإعادة الاستخدام.", content: `# الدوال\n\n\`\`\`js\nfunction add(a, b) { return a + b; }\nconst multiply = (a, b) => a * b;\n\`\`\`\n\nArrow functions مش عندها \`this\` خاص بيها.` },
+      quiz: [{ correctIndex: 2, en: { question: "Arrow functions...", options: ["Have their own this", "Cannot return values", "Inherit this from the surrounding scope", "Are always async"], explanation: "Arrow functions inherit this lexically." }, ar: { question: "Arrow functions...", options: ["عندها this خاص", "ميقدرش ترجع قيم", "بترث this من النطاق المحيط", "دايماً async"], explanation: "Arrow functions بترث this من السياق." } }] },
+    { slug: "arrays-and-objects", durationMinutes: 45, video: { en: { youtubeId: "R8rmfD9Y5-c", sourceName: "Web Dev Simplified", sourceUrl: "https://www.youtube.com/@WebDevSimplified" } },
+      en: { title: "Arrays, Objects & Iteration", summary: "Working with collections.", content: `# Arrays & Objects\n\n\`\`\`js\nconst users = [{ name: "Ali" }, { name: "Sara" }];\nconst names = users.map(u => u.name);\n\`\`\`\n\nMaster: map, filter, reduce, find, forEach.` },
+      ar: { title: "Arrays و Objects و التكرار", summary: "التعامل مع المجموعات.", content: `# Arrays و Objects\n\n\`\`\`js\nconst users = [{ name: "Ali" }, { name: "Sara" }];\nconst names = users.map(u => u.name);\n\`\`\`\n\nأتقن: map, filter, reduce, find, forEach.` },
+      quiz: [{ correctIndex: 0, en: { question: "Which method transforms each item into a new value?", options: ["map", "filter", "reduce", "find"], explanation: "map returns a new array of transformed values." }, ar: { question: "أنهي method بتحوّل كل عنصر لقيمة جديدة؟", options: ["map", "filter", "reduce", "find"], explanation: "map بترجع array جديد من القيم المحوّلة." } }] },
+    { slug: "dom-manipulation", durationMinutes: 45, video: { en: { youtubeId: "y17RuWkWdn8", sourceName: "Web Dev Simplified", sourceUrl: "https://www.youtube.com/@WebDevSimplified" } },
+      en: { title: "DOM Manipulation & Events", summary: "Make pages interactive.", content: `# The DOM\n\n\`\`\`js\nconst btn = document.querySelector("#submit");\nbtn.addEventListener("click", () => alert("Hi!"));\n\`\`\`` },
+      ar: { title: "التعامل مع الـDOM و الأحداث", summary: "خلي الصفحات تفاعلية.", content: `# الـDOM\n\n\`\`\`js\nconst btn = document.querySelector("#submit");\nbtn.addEventListener("click", () => alert("Hi!"));\n\`\`\`` },
+      quiz: [{ correctIndex: 1, en: { question: "Which method selects the first matching element?", options: ["getElementById", "querySelector", "querySelectorAll", "getElementsByClassName"], explanation: "querySelector returns the first match." }, ar: { question: "أنهي method بترجع أول عنصر مطابق؟", options: ["getElementById", "querySelector", "querySelectorAll", "getElementsByClassName"], explanation: "querySelector بترجع أول match." } }] },
+    { slug: "async-await", durationMinutes: 50, video: { en: { youtubeId: "V_Kr9OSfDeU", sourceName: "Web Dev Simplified", sourceUrl: "https://www.youtube.com/@WebDevSimplified" } },
+      en: { title: "Promises & async/await", summary: "Handle network calls without callback hell.", content: `# Async/Await\n\n\`\`\`js\nasync function fetchUser(id) {\n  const res = await fetch(\`/api/users/\${id}\`);\n  return res.json();\n}\n\`\`\`` },
+      ar: { title: "Promises و async/await", summary: "تعامل مع استدعاءات الشبكة بدون callback hell.", content: `# Async/Await\n\n\`\`\`js\nasync function fetchUser(id) {\n  const res = await fetch(\`/api/users/\${id}\`);\n  return res.json();\n}\n\`\`\`` },
+      quiz: [{ correctIndex: 2, en: { question: "await can only be used inside...", options: ["any function", "a class", "an async function (or top-level module)", "a try block"], explanation: "await requires an async context." }, ar: { question: "await ينفع تستخدمه جوّه...", options: ["أي function", "class", "async function (أو module top-level)", "try block"], explanation: "await بيحتاج سياق async." } }] },
+  ],
+  project: { slug: "todo-app", difficulty: "medium", estimatedHours: 5, en: { title: "Vanilla JS Todo App", brief: "Build a fully functional todo app with localStorage persistence.", requirements: ["Add/edit/delete todos", "Filter by status", "Persist with localStorage", "Mobile responsive"], deliverables: ["Live URL", "GitHub repo"] }, ar: { title: "تطبيق Todo بـVanilla JS", brief: "ابني تطبيق todo كامل مع حفظ في localStorage.", requirements: ["إضافة/تعديل/حذف", "فلترة بالحالة", "حفظ في localStorage", "متجاوب"], deliverables: ["رابط مباشر", "GitHub repo"] } },
+};
+
+export default course;

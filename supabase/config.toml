@@ -1,1 +1,10 @@
 project_id = "jdowaletwmqjhvmaervb"
+
+[functions.chat-assistant]
+verify_jwt = false
+
+[functions.seed-content]
+verify_jwt = false
+
+[functions.dodo-webhook]
+verify_jwt = false

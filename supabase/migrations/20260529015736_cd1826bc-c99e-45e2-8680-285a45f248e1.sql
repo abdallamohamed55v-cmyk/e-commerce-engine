@@ -1,0 +1,2 @@
+UPDATE public.subscription_plans SET dodo_product_id='pdt_0NfrCVpwnMyfLbZiaxQ9k', price_usd=10 WHERE slug='monthly';
+UPDATE public.subscription_plans SET dodo_product_id='pdt_0NfrCgbgZSARUgjlwvK6N', price_usd=100 WHERE slug='yearly';
