@@ -1,7 +1,8 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const DODO_API = 'https://live.dodopayments.com';
+const DODO_LIVE_API = 'https://live.dodopayments.com';
+const DODO_TEST_API = 'https://test.dodopayments.com';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -39,8 +40,11 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get('origin') || 'https://example.com';
 
-    // Lifetime plans are one-time charges, others are recurring subscriptions.
-    const endpoint = plan.interval === 'lifetime' ? '/payments' : '/subscriptions';
+    const dodoApiKey = Deno.env.get('DODO_PAYMENTS_API_KEY');
+    if (!dodoApiKey) {
+      console.error('DODO_PAYMENTS_API_KEY is not configured');
+      return json({ error: 'Payment provider is not configured' }, 503);
+    }
 
     const payload: Record<string, unknown> = {
       payment_link: true,
@@ -50,32 +54,41 @@ Deno.serve(async (req) => {
       billing: { country: 'US', state: 'CA', city: 'SF', street: 'N/A', zipcode: '00000' },
     };
 
-    if (plan.interval === 'lifetime') {
-      payload.product_cart = [{ product_id: plan.dodo_product_id, quantity: 1 }];
-    } else {
-      payload.product_id = plan.dodo_product_id;
-      payload.quantity = 1;
-    }
+    payload.product_cart = [{ product_id: plan.dodo_product_id, quantity: 1 }];
 
-    const res = await fetch(`${DODO_API}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('DODO_PAYMENTS_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const configuredBaseUrl = Deno.env.get('DODO_PAYMENTS_BASE_URL')?.replace(/\/$/, '');
+    const baseUrls = configuredBaseUrl ? [configuredBaseUrl] : [DODO_LIVE_API, DODO_TEST_API];
+    let lastError: unknown = null;
 
-    const body = await res.json();
-    if (!res.ok) {
-      console.error('Dodo error:', body);
-      return json({ error: body?.message || 'Dodo checkout failed', details: body }, 500);
+    for (const baseUrl of baseUrls) {
+      const res = await fetch(`${baseUrl}/checkouts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${dodoApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const body = await safeJson(res);
+      if (res.ok) {
+        return json({
+          checkout_url: body.checkout_url ?? body.payment_link,
+          subscription_id: body.subscription_id ?? body.payment_id ?? body.checkout_session_id,
+        });
+      }
+
+      lastError = body;
+      console.error('Dodo error:', { status: res.status, baseUrl, body });
+
+      if (res.status !== 401 && res.status !== 403) break;
     }
 
     return json({
-      checkout_url: body.payment_link,
-      subscription_id: body.subscription_id ?? body.payment_id,
-    });
+      error: 'Dodo checkout failed',
+      details: lastError,
+      message: 'Check that DODO_PAYMENTS_API_KEY matches the Dodo environment for these products.',
+    }, 502);
   } catch (e) {
     console.error(e);
     return json({ error: String(e?.message || e) }, 500);
@@ -87,4 +100,13 @@ function json(data: unknown, status = 200) {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     status,
   });
+}
+
+async function safeJson(res: Response) {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return { message: text };
+  }
 }
