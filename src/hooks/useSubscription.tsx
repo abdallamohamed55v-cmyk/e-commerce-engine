@@ -26,29 +26,33 @@ export function useSubscription() {
     }
 
     setLoading(true);
-    supabase
-      .from("user_subscriptions")
-      .select("*, plan:subscription_plans(*)")
-      .eq("user_id", user.id)
-      .in("status", ["active", "trialing"])
-      .gt("current_period_end", new Date().toISOString())
-      .order("current_period_end", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data, error }) => {
+    const loadSubscription = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("user_subscriptions")
+          .select("*, plan:subscription_plans(*)")
+          .eq("user_id", user.id)
+          .in("status", ["active", "trialing"])
+          .gt("current_period_end", new Date().toISOString())
+          .order("current_period_end", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
         if (cancelled) return;
         if (error) console.error("Failed to load subscription", error);
         setSub(data);
         setActive(!!data);
         setLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (cancelled) return;
         console.error("Failed to load subscription", error);
         setSub(null);
         setActive(false);
         setLoading(false);
-      });
+      }
+    };
+
+    loadSubscription();
 
     return () => {
       cancelled = true;
