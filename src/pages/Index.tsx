@@ -110,9 +110,6 @@ export default function Index() {
       <section className="border-t border-white/5 bg-white/[0.015]">
         <div className="max-w-7xl mx-auto px-6 py-20">
           <div className="max-w-2xl">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-3">
-              {isAr ? "المجالات" : "Categories"}
-            </p>
             <h2 className="text-3xl md:text-5xl tracking-tighter font-light">
               {isAr ? "أربع عوالم. اشتراك واحد." : "Four worlds. One membership."}
             </h2>
