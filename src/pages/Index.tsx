@@ -257,20 +257,6 @@ export default function Index() {
               ? "اختر شهرياً، سنوياً، أو مدى الحياة. كل الخطط تفتح كل الكورسات."
               : "Pick monthly, yearly, or lifetime. Every plan unlocks every course."}
           </p>
-          <ul className="mt-8 grid sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-sm">
-            {[
-              isAr ? "إلغاء في أي وقت" : "Cancel anytime",
-              isAr ? "AR + EN" : "Arabic + English",
-              isAr ? "كورسات جديدة شهرياً" : "New courses monthly",
-            ].map((f) => (
-              <li
-                key={f}
-                className="text-white/75 text-center"
-              >
-                {f}
-              </li>
-            ))}
-          </ul>
           <Link
             to="/pricing"
             className="mt-9 inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
