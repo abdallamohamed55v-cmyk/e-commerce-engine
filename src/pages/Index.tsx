@@ -201,9 +201,6 @@ export default function Index() {
       {/* HOW IT WORKS */}
       <section className="border-y border-white/5 bg-white/[0.015]">
         <div className="max-w-5xl mx-auto px-6 py-20 text-center">
-          <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-3">
-            {isAr ? "كيف يعمل" : "How it works"}
-          </p>
           <h2 className="text-3xl md:text-5xl tracking-tighter font-light">
             {isAr ? "ثلاث خطوات. بدون احتكاك." : "Three steps. No friction."}
           </h2>
