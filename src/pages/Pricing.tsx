@@ -65,11 +65,6 @@ export default function Pricing() {
       ? isAr ? "سنوياً" : "/yr"
       : isAr ? "مرة واحدة" : "one-time";
 
-  const intervalCycleLabel = (i: string) =>
-    i === "month" ? (isAr ? "شهري" : "Monthly")
-    : i === "year" ? (isAr ? "سنوي" : "Yearly")
-    : (isAr ? "مدى الحياة" : "Lifetime");
-
   const filtered = plans;
 
   return (
