@@ -143,11 +143,29 @@ export default function Pricing() {
                       : isAr ? "اشترك الآن" : "Subscribe now"}
                   </button>
 
-                  <ul className="mt-8 space-y-3">
-                    {features.map((f, i) => (
-                      <li key={i} className="text-sm text-white/75">— {f}</li>
-                    ))}
-                  </ul>
+                  <div className="mt-8 pt-8 border-t border-white/10">
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-white/40 mb-4">
+                      {isAr ? "ما ستحصل عليه" : "What's included"}
+                    </p>
+                    <ul className="space-y-3">
+                      {features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-3 text-sm text-white/75 leading-relaxed">
+                          <span
+                            className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full inline-flex items-center justify-center ${
+                              highlight
+                                ? "bg-blue-500/15 text-blue-300"
+                                : "bg-white/5 text-white/60"
+                            }`}
+                          >
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </span>
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               );
             })}
