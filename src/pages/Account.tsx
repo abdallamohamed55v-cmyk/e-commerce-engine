@@ -3,83 +3,174 @@ import { Link, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/hooks/useLang";
 import { courses } from "@/content";
+import { getCourseImage } from "@/content/courseImages";
+import SiteShell from "@/components/SiteShell";
+import { ArrowUpRight, Check } from "lucide-react";
 
 export default function Account() {
   const lang = useLang();
-  const { user, loading, signOut } = useAuth();
+  const isAr = lang === "ar";
+  const { user, loading } = useAuth();
   const { subscription } = useSubscription();
   const [progress, setProgress] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("lesson_progress").select("*").eq("user_id", user.id).then(({ data }) => setProgress(data || []));
+    supabase
+      .from("lesson_progress")
+      .select("*")
+      .eq("user_id", user.id)
+      .then(({ data }) => setProgress(data || []));
   }, [user]);
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading)
+    return (
+      <SiteShell>
+        <div className="p-20 text-center text-white/50 text-sm">
+          {isAr ? "جاري التحميل..." : "Loading..."}
+        </div>
+      </SiteShell>
+    );
   if (!user) return <Navigate to="/auth?redirect=/account" />;
 
+  const totalDone = progress.length;
+  const totalLessons = courses.reduce((acc, c) => acc + c.lessons.length, 0);
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-6 py-16 space-y-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">{lang === "ar" ? "حسابي" : "My Account"}</h1>
-          <Button variant="outline" onClick={signOut}>{lang === "ar" ? "تسجيل خروج" : "Sign out"}</Button>
-        </div>
+    <SiteShell>
+      <section className="max-w-5xl mx-auto px-6 pt-16 pb-10">
+        <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-3">
+          {isAr ? "حسابي" : "My account"}
+        </p>
+        <h1 className="text-4xl md:text-5xl tracking-tighter font-light">
+          {isAr ? `أهلاً، ${user.email?.split("@")[0]}` : `Hello, ${user.email?.split("@")[0]}`}
+        </h1>
+      </section>
 
-        <Card className="p-6">
-          <p className="text-sm text-muted-foreground">{lang === "ar" ? "البريد الإلكتروني" : "Email"}</p>
-          <p className="font-medium">{user.email}</p>
-        </Card>
+      <section className="max-w-5xl mx-auto px-6 grid md:grid-cols-3 gap-4 mb-10">
+        <Stat
+          label={isAr ? "الدروس المكتملة" : "Lessons completed"}
+          value={String(totalDone)}
+          hint={`/ ${totalLessons}`}
+        />
+        <Stat
+          label={isAr ? "الكورسات المتاحة" : "Courses available"}
+          value={String(courses.length)}
+        />
+        <Stat
+          label={isAr ? "حالة الاشتراك" : "Subscription"}
+          value={
+            subscription
+              ? subscription.status === "active"
+                ? isAr ? "نشط" : "Active"
+                : subscription.status
+              : isAr ? "غير مشترك" : "Inactive"
+          }
+        />
+      </section>
 
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-3">{lang === "ar" ? "الاشتراك" : "Subscription"}</h2>
+      {/* Subscription card */}
+      <section className="max-w-5xl mx-auto px-6 mb-12">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8">
+          <h2 className="text-xs uppercase tracking-widest text-white/40 mb-4">
+            {isAr ? "الاشتراك" : "Membership"}
+          </h2>
           {subscription ? (
-            <div className="space-y-2">
-              <div className="flex gap-2 items-center">
-                <Badge>{subscription.status}</Badge>
-                <span className="font-medium">{lang === "ar" ? subscription.plan.name_ar : subscription.plan.name}</span>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <p className="text-2xl font-light tracking-tight">
+                  {isAr ? subscription.plan.name_ar : subscription.plan.name}
+                </p>
+                <p className="mt-1 text-sm text-white/50">
+                  {subscription.plan.interval === "lifetime"
+                    ? isAr ? "وصول مدى الحياة" : "Lifetime access"
+                    : `${isAr ? "يجدد في" : "Renews on"} ${new Date(
+                        subscription.current_period_end
+                      ).toLocaleDateString()}`}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {lang === "ar" ? "ينتهي في" : "Renews on"}: {new Date(subscription.current_period_end).toLocaleDateString()}
-              </p>
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-400/30 text-green-300 text-xs">
+                <Check className="h-3 w-3" />
+                {isAr ? "نشط" : "Active"}
+              </span>
             </div>
           ) : (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground mb-4">{lang === "ar" ? "مفيش اشتراك نشط" : "No active subscription"}</p>
-              <Button asChild><Link to="/pricing">{lang === "ar" ? "شوف الباقات" : "View plans"}</Link></Button>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <p className="text-lg text-white/80">
+                  {isAr ? "مفيش اشتراك نشط حالياً" : "No active subscription"}
+                </p>
+                <p className="mt-1 text-sm text-white/50">
+                  {isAr ? "افتح كل الكورسات بخطة واحدة." : "Unlock every course with one plan."}
+                </p>
+              </div>
+              <Link
+                to="/pricing"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
+              >
+                {isAr ? "اعرض الخطط" : "View plans"}
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
             </div>
           )}
-        </Card>
+        </div>
+      </section>
 
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{lang === "ar" ? "تقدمي" : "My Progress"}</h2>
-          <div className="space-y-3">
-            {courses.map((c) => {
-              const done = progress.filter((p) => p.course_slug === c.slug).length;
-              const pct = Math.round((done / c.lessons.length) * 100);
-              return (
-                <Link key={c.slug} to={`/courses/${c.slug}`} className="block">
-                  <div className="flex items-center gap-4 hover:bg-accent p-3 rounded">
-                    <div className={`w-10 h-10 rounded bg-gradient-to-br ${c.coverGradient}`} />
-                    <div className="flex-1">
-                      <p className="font-medium">{c[lang].title}</p>
-                      <div className="h-2 bg-muted rounded mt-1 overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                    <span className="text-sm text-muted-foreground">{done}/{c.lessons.length}</span>
+      {/* Progress */}
+      <section className="max-w-5xl mx-auto px-6 pb-20">
+        <h2 className="text-xs uppercase tracking-widest text-white/40 mb-5">
+          {isAr ? "تقدمي" : "My progress"}
+        </h2>
+        <div className="space-y-2">
+          {courses.map((c) => {
+            const done = progress.filter((p) => p.course_slug === c.slug).length;
+            const pct = Math.round((done / c.lessons.length) * 100);
+            const img = getCourseImage(c.slug);
+            return (
+              <Link
+                key={c.slug}
+                to={`/courses/${c.slug}`}
+                className="flex items-center gap-4 p-3 rounded-2xl border border-white/5 hover:border-white/15 hover:bg-white/[0.03] transition group"
+              >
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/5 shrink-0">
+                  {img ? (
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${c.coverGradient}`} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{c[lang].title}</p>
+                  <div className="h-1 bg-white/10 rounded-full mt-2 overflow-hidden">
+                    <div
+                      className="h-full bg-blue-400 transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
-                </Link>
-              );
-            })}
-          </div>
-        </Card>
-      </div>
+                </div>
+                <span className="text-xs text-white/50 tabular-nums shrink-0">
+                  {done}/{c.lessons.length}
+                </span>
+                <ArrowUpRight className="h-4 w-4 text-white/30 group-hover:text-white transition" />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    </SiteShell>
+  );
+}
+
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+      <p className="text-xs uppercase tracking-widest text-white/40">{label}</p>
+      <p className="mt-3 text-3xl font-light tracking-tighter">
+        {value}
+        {hint && <span className="text-base text-white/30 ms-1">{hint}</span>}
+      </p>
     </div>
   );
 }

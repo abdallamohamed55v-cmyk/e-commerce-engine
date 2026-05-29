@@ -5,6 +5,7 @@ import { getCourseImage } from "@/content/courseImages";
 import type { CourseCategory } from "@/content";
 import { Clock, BookOpen, Search, ArrowUpRight } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
+import SiteShell from "@/components/SiteShell";
 
 export default function Courses() {
   const lang = useLang();
@@ -29,27 +30,7 @@ export default function Courses() {
   };
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="min-h-screen bg-black text-white font-geist">
-      {/* Nav */}
-      <header className="border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-lg font-semibold tracking-tight">
-            Shro<span className="text-blue-400">.AI</span>
-          </Link>
-          <nav className="flex items-center gap-6 text-sm text-white/70">
-            <Link to="/pricing" className="hover:text-white transition">
-              {isAr ? "الأسعار" : "Pricing"}
-            </Link>
-            <Link
-              to="/auth"
-              className="px-4 py-1.5 rounded-full bg-white text-black text-xs font-medium hover:bg-white/90 transition"
-            >
-              {isAr ? "تسجيل الدخول" : "Sign in"}
-            </Link>
-          </nav>
-        </div>
-      </header>
-
+    <SiteShell>
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 pt-20 pb-10">
         <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-4">
@@ -66,12 +47,12 @@ export default function Courses() {
       </section>
 
       {/* Filters */}
-      <section className="max-w-7xl mx-auto px-6 sticky top-0 z-20 bg-black/80 backdrop-blur-md border-y border-white/5 py-4">
+      <section className="max-w-7xl mx-auto px-6 sticky top-16 z-20 bg-black/80 backdrop-blur-md border-y border-white/5 py-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-wrap gap-2">
             <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
               {isAr ? "الكل" : "All"}
-              <span className="text-white/40 ml-1.5">{courses.length}</span>
+              <span className="text-white/40 ms-1.5">{courses.length}</span>
             </FilterPill>
             {CATEGORIES.map((cat) => {
               const count = courses.filter((c) => c.category === cat.key).length;
@@ -82,19 +63,19 @@ export default function Courses() {
                   onClick={() => setFilter(cat.key)}
                 >
                   {isAr ? cat.ar : cat.en}
-                  <span className="text-white/40 ml-1.5">{count}</span>
+                  <span className="text-white/40 ms-1.5">{count}</span>
                 </FilterPill>
               );
             })}
           </div>
 
           <div className="relative md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={isAr ? "ابحث عن كورس..." : "Search courses..."}
-              className="w-full bg-white/5 border border-white/10 rounded-full pl-10 pr-4 py-2 text-sm placeholder:text-white/40 focus:outline-none focus:border-white/30 transition"
+              className="w-full bg-white/5 border border-white/10 rounded-full ps-10 pe-4 py-2 text-sm placeholder:text-white/40 focus:outline-none focus:border-white/30 transition"
             />
           </div>
         </div>
@@ -112,11 +93,7 @@ export default function Courses() {
               const l = c[lang];
               const img = getCourseImage(c.slug);
               return (
-                <Link
-                  key={c.slug}
-                  to={`/courses/${c.slug}`}
-                  className="group block"
-                >
+                <Link key={c.slug} to={`/courses/${c.slug}`} className="group block">
                   <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/5">
                     {img ? (
                       <img
@@ -130,17 +107,17 @@ export default function Courses() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-transparent" />
 
-                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <div className="absolute top-4 start-4">
                       <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur border border-white/10 text-[10px] uppercase tracking-wider text-white/80">
                         {categoryLabel(c.category)}
                       </span>
                     </div>
 
-                    <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <div className="absolute top-4 end-4 w-9 h-9 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                       <ArrowUpRight className="h-4 w-4" />
                     </div>
 
-                    <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 text-[11px] text-white/70">
+                    <div className="absolute bottom-4 start-4 end-4 flex items-center gap-3 text-[11px] text-white/70">
                       <span className="inline-flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {Math.round(c.durationMinutes / 60)}h
@@ -190,7 +167,7 @@ export default function Courses() {
           </Link>
         </div>
       </section>
-    </div>
+    </SiteShell>
   );
 }
 

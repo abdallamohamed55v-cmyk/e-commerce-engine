@@ -4,14 +4,13 @@ import { getCourseImage } from "@/content/courseImages";
 import { useLang } from "@/hooks/useLang";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Check, Clock, Lock, PlayCircle } from "lucide-react";
+import { Check, Clock, Lock, PlayCircle, BookOpen, ArrowUpRight } from "lucide-react";
+import SiteShell from "@/components/SiteShell";
 
 export default function CourseDetail() {
   const { slug } = useParams();
   const lang = useLang();
+  const isAr = lang === "ar";
   const { user } = useAuth();
   const { active } = useSubscription();
   const course = getCourse(slug || "");
@@ -21,76 +20,169 @@ export default function CourseDetail() {
   const cover = getCourseImage(course.slug);
 
   return (
-    <div className="min-h-screen bg-background">
-      {cover ? (
-        <div className="relative h-72 overflow-hidden">
-          <img src={cover} alt={c.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+    <SiteShell>
+      {/* Hero */}
+      <section className="relative">
+        <div className="relative h-[420px] overflow-hidden">
+          {cover ? (
+            <img src={cover} alt={c.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className={`w-full h-full bg-gradient-to-br ${course.coverGradient}`} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
         </div>
-      ) : (
-        <div className={`h-64 bg-gradient-to-br ${course.coverGradient}`} />
-      )}
 
-      <div className="max-w-5xl mx-auto px-6 -mt-32 relative">
-        <Card className="p-8 space-y-6">
-          <div className="flex gap-2">
-            <Badge>{course.level}</Badge>
-            <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />{Math.round(course.durationMinutes / 60)}h</Badge>
+        <div className="max-w-5xl mx-auto px-6 -mt-48 relative pb-8">
+          <Link
+            to="/courses"
+            className="text-xs text-white/60 hover:text-white inline-flex items-center gap-1"
+          >
+            ← {isAr ? "كل الكورسات" : "All courses"}
+          </Link>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Tag>{course.level}</Tag>
+            <Tag>
+              <Clock className="h-3 w-3 me-1" />
+              {Math.round(course.durationMinutes / 60)}h
+            </Tag>
+            <Tag>
+              <BookOpen className="h-3 w-3 me-1" />
+              {course.lessons.length} {isAr ? "درس" : "lessons"}
+            </Tag>
           </div>
-          <h1 className="text-4xl font-bold">{c.title}</h1>
-          <p className="text-lg text-muted-foreground">{c.tagline}</p>
-          <p>{c.description}</p>
+          <h1 className="mt-5 text-4xl md:text-6xl tracking-tighter font-light max-w-3xl">
+            {c.title}
+          </h1>
+          <p className="mt-4 text-lg text-white/65 max-w-2xl leading-relaxed">{c.tagline}</p>
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-2 gap-6">
+      {/* Content */}
+      <section className="max-w-5xl mx-auto px-6 grid md:grid-cols-3 gap-10 pb-16">
+        <div className="md:col-span-2 space-y-10">
+          <div>
+            <h2 className="text-xs uppercase tracking-widest text-white/40 mb-3">
+              {isAr ? "نظرة عامة" : "Overview"}
+            </h2>
+            <p className="text-white/75 leading-relaxed">{c.description}</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold mb-3">{lang === "ar" ? "هتتعلم" : "You'll learn"}</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="text-xs uppercase tracking-widest text-white/40 mb-3">
+                {isAr ? "هتتعلم" : "You'll learn"}
+              </h3>
+              <ul className="space-y-2.5 text-sm">
                 {c.learningOutcomes.map((o, i) => (
-                  <li key={i} className="flex gap-2"><Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />{o}</li>
+                  <li key={i} className="flex gap-2 text-white/75">
+                    <Check className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                    {o}
+                  </li>
                 ))}
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-3">{lang === "ar" ? "المتطلبات" : "Prerequisites"}</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {c.prerequisites.map((p, i) => <li key={i}>• {p}</li>)}
+              <h3 className="text-xs uppercase tracking-widest text-white/40 mb-3">
+                {isAr ? "المتطلبات" : "Prerequisites"}
+              </h3>
+              <ul className="space-y-2.5 text-sm text-white/60">
+                {c.prerequisites.map((p, i) => (
+                  <li key={i}>• {p}</li>
+                ))}
               </ul>
             </div>
           </div>
 
-          {!active && (
-            <div className="bg-muted p-6 rounded-lg text-center">
-              <p className="mb-3">{lang === "ar" ? "اشترك للوصول لكل الكورسات" : "Subscribe to access all courses"}</p>
-              <Button asChild size="lg">
-                <Link to={user ? "/pricing" : "/auth?redirect=/pricing"}>{lang === "ar" ? "شوف الباقات" : "View pricing"}</Link>
-              </Button>
+          <div>
+            <h2 className="text-xs uppercase tracking-widest text-white/40 mb-4">
+              {isAr ? "الدروس" : "Lessons"}
+            </h2>
+            <div className="space-y-2">
+              {course.lessons.map((lesson, i) => {
+                const lc = lesson[lang];
+                return (
+                  <Link
+                    key={lesson.slug}
+                    to={active ? `/courses/${course.slug}/lessons/${lesson.slug}` : "/pricing"}
+                    className="flex items-center gap-4 p-4 rounded-2xl border border-white/5 hover:border-white/15 hover:bg-white/[0.03] transition group"
+                  >
+                    <span className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs tabular-nums text-white/60">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium truncate">{lc.title}</h4>
+                      <p className="text-xs text-white/50 truncate mt-0.5">{lc.summary}</p>
+                    </div>
+                    <span className="text-[11px] text-white/40 tabular-nums">
+                      {lesson.durationMinutes}m
+                    </span>
+                    {active ? (
+                      <PlayCircle className="h-5 w-5 text-blue-400" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-white/30" />
+                    )}
+                  </Link>
+                );
+              })}
             </div>
-          )}
-        </Card>
-
-        <div className="my-8 space-y-3">
-          <h2 className="text-2xl font-bold">{lang === "ar" ? "الدروس" : "Lessons"}</h2>
-          {course.lessons.map((lesson, i) => {
-            const lc = lesson[lang];
-            return (
-              <Link
-                key={lesson.slug}
-                to={active ? `/courses/${course.slug}/lessons/${lesson.slug}` : "/pricing"}
-              >
-                <Card className="p-4 flex items-center gap-4 hover:bg-accent transition">
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold">{i + 1}</div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{lc.title}</h4>
-                    <p className="text-sm text-muted-foreground">{lc.summary}</p>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{lesson.durationMinutes}m</div>
-                  {active ? <PlayCircle className="h-5 w-5 text-primary" /> : <Lock className="h-5 w-5 text-muted-foreground" />}
-                </Card>
-              </Link>
-            );
-          })}
+          </div>
         </div>
-      </div>
-    </div>
+
+        {/* Sidebar */}
+        <aside className="md:sticky md:top-24 self-start">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6">
+            {active ? (
+              <>
+                <p className="text-xs uppercase tracking-widest text-green-400/80 mb-3">
+                  {isAr ? "مفتوح" : "Unlocked"}
+                </p>
+                <h3 className="text-xl font-light tracking-tight">
+                  {isAr ? "ابدأ التعلم" : "Start learning"}
+                </h3>
+                <p className="mt-2 text-sm text-white/55">
+                  {isAr ? "كل الدروس متاحة لك." : "All lessons are open."}
+                </p>
+                <Link
+                  to={`/courses/${course.slug}/lessons/${course.lessons[0].slug}`}
+                  className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
+                >
+                  {isAr ? "ابدأ أول درس" : "Start first lesson"}
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-xs uppercase tracking-widest text-blue-400/80 mb-3">
+                  {isAr ? "العضوية" : "Membership"}
+                </p>
+                <h3 className="text-xl font-light tracking-tight">
+                  {isAr ? "اشترك للوصول" : "Subscribe to access"}
+                </h3>
+                <p className="mt-2 text-sm text-white/55">
+                  {isAr
+                    ? "خطة واحدة تفتح كل الكورسات."
+                    : "One plan unlocks every course."}
+                </p>
+                <Link
+                  to={user ? "/pricing" : "/auth?redirect=/pricing"}
+                  className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
+                >
+                  {isAr ? "اعرض الخطط" : "View pricing"}
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
+          </div>
+        </aside>
+      </section>
+    </SiteShell>
+  );
+}
+
+function Tag({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] uppercase tracking-wider text-white/70">
+      {children}
+    </span>
   );
 }
