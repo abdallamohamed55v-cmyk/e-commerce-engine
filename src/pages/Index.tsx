@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import heroVideo from "@/assets/hero-video.mp4";
 import motivation1 from "@/assets/motivation-1.png";
 
 import motivation2 from "@/assets/motivation-2.png";
