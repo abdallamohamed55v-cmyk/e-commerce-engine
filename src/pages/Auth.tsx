@@ -154,6 +154,14 @@ export default function Auth() {
             </button>
           </form>
 
+          {mode === "signin" && (
+            <p className="mt-4 text-center text-xs">
+              <Link to="/reset-password" className="text-white/50 hover:text-white">
+                {isAr ? "نسيت كلمة المرور؟" : "Forgot password?"}
+              </Link>
+            </p>
+          )}
+
           <p className="mt-6 text-center text-xs text-white/40">
             {isAr
               ? "بإنشاء حساب أنت توافق على شروطنا."

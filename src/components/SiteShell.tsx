@@ -20,7 +20,8 @@ export default function SiteShell({ children, bare = false }: Props) {
   const nav = [
     { to: "/courses", label: isAr ? "الكورسات" : "Courses" },
     { to: "/pricing", label: isAr ? "الأسعار" : "Pricing" },
-    { to: "/#manifesto", label: isAr ? "ليه احنا" : "Why us" },
+    { to: "/about", label: isAr ? "عن المنصة" : "About" },
+    { to: "/contact", label: isAr ? "تواصل" : "Contact" },
   ];
 
   return (
@@ -194,9 +195,8 @@ export default function SiteShell({ children, bare = false }: Props) {
               {isAr ? "قانوني" : "Legal"}
             </p>
             <ul className="space-y-2 text-sm text-white/70">
-              <li><a href="#" className="hover:text-white">{isAr ? "الخصوصية" : "Privacy"}</a></li>
-              <li><a href="#" className="hover:text-white">{isAr ? "الشروط" : "Terms"}</a></li>
-              <li><a href="#" className="hover:text-white">{isAr ? "تواصل" : "Contact"}</a></li>
+              <li><Link to="/about" className="hover:text-white">{isAr ? "عن المنصة" : "About"}</Link></li>
+              <li><Link to="/contact" className="hover:text-white">{isAr ? "تواصل" : "Contact"}</Link></li>
             </ul>
           </div>
         </div>

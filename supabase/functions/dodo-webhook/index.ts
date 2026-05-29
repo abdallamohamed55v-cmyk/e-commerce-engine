@@ -35,14 +35,16 @@ Deno.serve(async (req) => {
     const metadata = data.metadata || {};
     const userId = metadata.user_id;
     const planId = metadata.plan_id;
+    const interval = metadata.interval;
 
-    console.log('Dodo event:', type, data.subscription_id);
+    console.log('Dodo event:', type, data.subscription_id || data.payment_id);
 
     if (!userId) {
       console.warn('No user_id in metadata, skipping');
       return new Response('ok', { status: 200 });
     }
 
+    // Subscription events (monthly / yearly)
     if (type === 'subscription.active' || type === 'subscription.renewed') {
       await admin.from('user_subscriptions').upsert({
         user_id: userId,
@@ -61,6 +63,20 @@ Deno.serve(async (req) => {
       await admin.from('user_subscriptions')
         .update({ status: 'past_due' })
         .eq('dodo_subscription_id', data.subscription_id);
+    }
+    // One-time payment events (lifetime plan)
+    else if (type === 'payment.succeeded' && interval === 'lifetime') {
+      const periodEnd = new Date();
+      periodEnd.setFullYear(periodEnd.getFullYear() + 100);
+      await admin.from('user_subscriptions').upsert({
+        user_id: userId,
+        plan_id: planId,
+        dodo_subscription_id: `lifetime_${data.payment_id}`,
+        dodo_customer_id: data.customer?.customer_id,
+        status: 'active',
+        current_period_start: new Date().toISOString(),
+        current_period_end: periodEnd.toISOString(),
+      }, { onConflict: 'dodo_subscription_id' });
     }
 
     return new Response('ok', { status: 200 });
