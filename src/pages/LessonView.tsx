@@ -14,13 +14,13 @@ export default function LessonView() {
   const lang = useLang();
   const isAr = lang === "ar";
   const { user, loading } = useAuth();
-  const { active } = useSubscription();
+  const { active, loading: subscriptionLoading } = useSubscription();
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
 
   const data = getLesson(slug || "", lessonSlug || "");
   if (!data) return <Navigate to="/courses" />;
-  if (loading || active === null)
+  if (loading || subscriptionLoading || active === null)
     return (
       <SiteShell>
         <div className="p-20 text-center text-white/50 text-sm">Loading...</div>
