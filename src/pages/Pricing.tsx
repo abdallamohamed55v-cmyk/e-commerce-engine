@@ -71,7 +71,7 @@ export default function Pricing() {
     : i === "year" ? (isAr ? "سنوي" : "Yearly")
     : (isAr ? "مدى الحياة" : "Lifetime");
 
-  const filtered = plans.filter((p) => p.interval === cycle);
+  const filtered = plans;
 
   return (
     <SiteShell>
