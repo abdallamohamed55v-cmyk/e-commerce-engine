@@ -12,7 +12,7 @@ export default function Account() {
   const lang = useLang();
   const isAr = lang === "ar";
   const { user, loading } = useAuth();
-  const { subscription } = useSubscription();
+  const { subscription, loading: subscriptionLoading } = useSubscription();
   const [progress, setProgress] = useState<any[]>([]);
 
   useEffect(() => {
@@ -74,7 +74,9 @@ export default function Account() {
         <Stat
           label={isAr ? "حالة الاشتراك" : "Subscription"}
           value={
-            subscription
+            subscriptionLoading
+              ? isAr ? "تحميل" : "Loading"
+              : subscription
               ? subscription.status === "active"
                 ? isAr ? "نشط" : "Active"
                 : subscription.status
@@ -89,7 +91,11 @@ export default function Account() {
           <h2 className="text-xs uppercase tracking-widest text-white/40 mb-4">
             {isAr ? "الاشتراك" : "Membership"}
           </h2>
-          {subscription ? (
+          {subscriptionLoading ? (
+            <div className="py-8 text-center text-sm text-white/50">
+              {isAr ? "جاري التحقق من الاشتراك..." : "Checking subscription..."}
+            </div>
+          ) : subscription ? (
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <p className="text-2xl font-light tracking-tight">
