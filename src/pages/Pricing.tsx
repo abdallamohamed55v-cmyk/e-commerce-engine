@@ -25,7 +25,6 @@ export default function Pricing() {
   const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
-  const [cycle, setCycle] = useState<"month" | "year" | "lifetime">("year");
 
   useEffect(() => {
     supabase
@@ -66,12 +65,7 @@ export default function Pricing() {
       ? isAr ? "سنوياً" : "/yr"
       : isAr ? "مرة واحدة" : "one-time";
 
-  const intervalCycleLabel = (i: string) =>
-    i === "month" ? (isAr ? "شهري" : "Monthly")
-    : i === "year" ? (isAr ? "سنوي" : "Yearly")
-    : (isAr ? "مدى الحياة" : "Lifetime");
-
-  const filtered = plans.filter((p) => p.interval === cycle);
+  const filtered = plans;
 
   return (
     <SiteShell>
@@ -87,42 +81,15 @@ export default function Pricing() {
             ? "اختر دورة الفوترة المناسبة لك. ألغِ في أي وقت."
             : "Pick the billing cycle that suits you. Cancel anytime."}
         </p>
-
-        {/* Toggle */}
-        <div className="mt-10 inline-flex p-1 rounded-full bg-white/5 border border-white/10">
-          {(["month", "year", "lifetime"] as const).map((c) => (
-            <button
-              key={c}
-              onClick={() => setCycle(c)}
-              className={`px-5 py-2 rounded-full text-xs font-medium transition ${
-                cycle === c
-                  ? "bg-white text-black"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              {intervalCycleLabel(c)}
-              {c === "year" && (
-                <span className="ms-2 text-[10px] text-blue-300/80">
-                  {isAr ? "وفّر 20%" : "Save 20%"}
-                </span>
-              )}
-              {c === "lifetime" && (
-                <span className="ms-2 text-[10px] text-blue-300/80">
-                  {isAr ? "أفضل قيمة" : "Best value"}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-6 pb-24">
+      <section className="max-w-6xl mx-auto px-6 pb-24">
         {filtered.length === 0 ? (
           <div className="text-center text-white/50 text-sm py-20">
             {isAr ? "لا توجد خطط متاحة" : "No plans available."}
           </div>
         ) : (
-          <div className={`grid gap-6 ${filtered.length === 1 ? "max-w-md mx-auto" : "md:grid-cols-2"}`}>
+          <div className={`grid gap-6 ${filtered.length === 1 ? "max-w-md mx-auto" : "md:grid-cols-3"}`}>
             {filtered.map((p) => {
               const features = isAr ? p.features_ar : p.features;
               const isLifetime = p.interval === "lifetime";
