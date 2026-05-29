@@ -154,11 +154,6 @@ export default function Pricing() {
           </div>
         )}
 
-        <p className="text-center text-xs text-white/40 mt-10">
-          {isAr
-            ? "كل الخطط تشمل تجربة 14 يوم. لا توجد رسوم إعداد."
-            : "All plans include a 14-day trial. No setup fees."}
-        </p>
       </section>
     </SiteShell>
   );
