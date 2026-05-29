@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/hooks/useLang";
 import { toast } from "@/hooks/use-toast";
 import SiteShell from "@/components/SiteShell";
-import { ArrowRight } from "lucide-react";
+
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -118,14 +118,13 @@ export default function ResetPassword() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 inline-flex items-center justify-center gap-2 disabled:opacity-60"
+            className="mt-2 w-full py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 inline-flex items-center justify-center disabled:opacity-60"
           >
             {loading
               ? "..."
               : mode === "request"
               ? isAr ? "إرسال الرابط" : "Send reset link"
               : isAr ? "تحديث كلمة المرور" : "Update password"}
-            {!loading && <ArrowRight className="h-4 w-4" />}
           </button>
         </form>
 

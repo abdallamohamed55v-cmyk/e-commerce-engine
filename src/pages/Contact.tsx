@@ -3,7 +3,6 @@ import { useLang } from "@/hooks/useLang";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import SiteShell from "@/components/SiteShell";
-import { Mail, ArrowRight } from "lucide-react";
 
 export default function Contact() {
   const lang = useLang();
@@ -89,16 +88,17 @@ export default function Contact() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 inline-flex items-center gap-2 disabled:opacity-60"
+              className="mt-2 px-6 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 inline-flex items-center justify-center disabled:opacity-60"
             >
               {loading ? "..." : isAr ? "إرسال" : "Send message"}
-              <ArrowRight className="h-4 w-4" />
             </button>
           </form>
         )}
 
-        <div className="mt-12 pt-8 border-t border-white/5 flex items-center gap-3 text-sm text-white/60">
-          <Mail className="h-4 w-4" />
+        <div className="mt-12 pt-8 border-t border-white/5 text-sm text-white/60">
+          <p className="text-xs uppercase tracking-widest text-white/40 mb-2">
+            {isAr ? "البريد الإلكتروني" : "Email"}
+          </p>
           <a href="mailto:hello@shro.ai" className="hover:text-white">
             hello@shro.ai
           </a>

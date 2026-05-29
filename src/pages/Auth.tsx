@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/hooks/useLang";
 import { toast } from "@/hooks/use-toast";
-import { ArrowRight } from "lucide-react";
+
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -143,14 +143,13 @@ export default function Auth() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition inline-flex items-center justify-center gap-2 disabled:opacity-60"
+              className="mt-2 w-full py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition inline-flex items-center justify-center disabled:opacity-60"
             >
               {loading
                 ? "..."
                 : mode === "signin"
                 ? isAr ? "تسجيل الدخول" : "Sign in"
                 : isAr ? "إنشاء الحساب" : "Create account"}
-              {!loading && <ArrowRight className="h-4 w-4" />}
             </button>
           </form>
 

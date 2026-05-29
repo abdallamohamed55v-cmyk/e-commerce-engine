@@ -4,7 +4,6 @@ import { getCourseImage } from "@/content/courseImages";
 import { useLang } from "@/hooks/useLang";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Check, Clock, Lock, PlayCircle, BookOpen, ArrowUpRight } from "lucide-react";
 import SiteShell from "@/components/SiteShell";
 
 export default function CourseDetail() {
@@ -35,20 +34,14 @@ export default function CourseDetail() {
         <div className="max-w-5xl mx-auto px-6 -mt-48 relative pb-8">
           <Link
             to="/courses"
-            className="text-xs text-white/60 hover:text-white inline-flex items-center gap-1"
+            className="text-xs text-white/60 hover:text-white"
           >
-            ← {isAr ? "كل الكورسات" : "All courses"}
+            {isAr ? "العودة للكورسات" : "Back to courses"}
           </Link>
           <div className="mt-4 flex flex-wrap gap-2">
             <Tag>{course.level}</Tag>
-            <Tag>
-              <Clock className="h-3 w-3 me-1" />
-              {Math.round(course.durationMinutes / 60)}h
-            </Tag>
-            <Tag>
-              <BookOpen className="h-3 w-3 me-1" />
-              {course.lessons.length} {isAr ? "درس" : "lessons"}
-            </Tag>
+            <Tag>{Math.round(course.durationMinutes / 60)}h</Tag>
+            <Tag>{course.lessons.length} {isAr ? "درس" : "lessons"}</Tag>
           </div>
           <h1 className="mt-5 text-4xl md:text-6xl tracking-tighter font-light max-w-3xl">
             {c.title}
@@ -74,10 +67,7 @@ export default function CourseDetail() {
               </h3>
               <ul className="space-y-2.5 text-sm">
                 {c.learningOutcomes.map((o, i) => (
-                  <li key={i} className="flex gap-2 text-white/75">
-                    <Check className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
-                    {o}
-                  </li>
+                  <li key={i} className="text-white/75">— {o}</li>
                 ))}
               </ul>
             </div>
@@ -87,7 +77,7 @@ export default function CourseDetail() {
               </h3>
               <ul className="space-y-2.5 text-sm text-white/60">
                 {c.prerequisites.map((p, i) => (
-                  <li key={i}>• {p}</li>
+                  <li key={i}>— {p}</li>
                 ))}
               </ul>
             </div>
@@ -116,11 +106,9 @@ export default function CourseDetail() {
                     <span className="text-[11px] text-white/40 tabular-nums">
                       {lesson.durationMinutes}m
                     </span>
-                    {active ? (
-                      <PlayCircle className="h-5 w-5 text-blue-400" />
-                    ) : (
-                      <Lock className="h-4 w-4 text-white/30" />
-                    )}
+                    <span className={`text-[10px] uppercase tracking-wider ${active ? "text-blue-300" : "text-white/30"}`}>
+                      {active ? (isAr ? "افتح" : "Open") : (isAr ? "مغلق" : "Locked")}
+                    </span>
                   </Link>
                 );
               })}
@@ -144,10 +132,9 @@ export default function CourseDetail() {
                 </p>
                 <Link
                   to={`/courses/${course.slug}/lessons/${course.lessons[0].slug}`}
-                  className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
+                  className="mt-5 w-full inline-flex items-center justify-center px-4 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
                 >
                   {isAr ? "ابدأ أول درس" : "Start first lesson"}
-                  <ArrowUpRight className="h-4 w-4" />
                 </Link>
               </>
             ) : (
@@ -165,10 +152,9 @@ export default function CourseDetail() {
                 </p>
                 <Link
                   to={user ? "/pricing" : "/auth?redirect=/pricing"}
-                  className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
+                  className="mt-5 w-full inline-flex items-center justify-center px-4 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition"
                 >
                   {isAr ? "اعرض الخطط" : "View pricing"}
-                  <ArrowUpRight className="h-4 w-4" />
                 </Link>
               </>
             )}

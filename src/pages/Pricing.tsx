@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Check, Sparkles, Infinity as InfinityIcon } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { toast } from "@/hooks/use-toast";
 import SiteShell from "@/components/SiteShell";
@@ -65,8 +64,6 @@ export default function Pricing() {
       ? isAr ? "سنوياً" : "/yr"
       : isAr ? "مرة واحدة" : "one-time";
 
-  const filtered = plans;
-
   return (
     <SiteShell>
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-12 text-center">
@@ -84,36 +81,35 @@ export default function Pricing() {
       </section>
 
       <section className="max-w-6xl mx-auto px-6 pb-24">
-        {filtered.length === 0 ? (
+        {plans.length === 0 ? (
           <div className="text-center text-white/50 text-sm py-20">
             {isAr ? "لا توجد خطط متاحة" : "No plans available."}
           </div>
         ) : (
-          <div className={`grid gap-6 ${filtered.length === 1 ? "max-w-md mx-auto" : "md:grid-cols-3"}`}>
-            {filtered.map((p) => {
+          <div className={`grid gap-6 ${plans.length === 1 ? "max-w-md mx-auto" : "md:grid-cols-3"}`}>
+            {plans.map((p) => {
               const features = isAr ? p.features_ar : p.features;
               const isLifetime = p.interval === "lifetime";
+              const highlight = p.is_popular || isLifetime;
               return (
                 <div
                   key={p.id}
                   className={`relative rounded-3xl p-8 border transition ${
-                    p.is_popular || isLifetime
+                    highlight
                       ? "border-blue-400/40 bg-gradient-to-b from-blue-500/[0.08] to-transparent shadow-[0_0_60px_-20px_rgba(59,130,246,0.4)]"
                       : "border-white/10 bg-white/[0.02]"
                   }`}
                 >
                   {p.is_popular && (
                     <div className="absolute -top-3 start-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-medium uppercase tracking-wider">
-                        <Sparkles className="h-3 w-3" />
+                      <span className="px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-medium uppercase tracking-wider">
                         {isAr ? "الأكثر شعبية" : "Most popular"}
                       </span>
                     </div>
                   )}
                   {isLifetime && !p.is_popular && (
                     <div className="absolute -top-3 start-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-medium uppercase tracking-wider">
-                        <InfinityIcon className="h-3 w-3" />
+                      <span className="px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-medium uppercase tracking-wider">
                         {isAr ? "أفضل قيمة" : "Best value"}
                       </span>
                     </div>
@@ -135,7 +131,7 @@ export default function Pricing() {
                     onClick={() => handleSubscribe(p.id)}
                     disabled={loading === p.id}
                     className={`mt-6 w-full py-3 rounded-full text-sm font-medium transition ${
-                      p.is_popular || isLifetime
+                      highlight
                         ? "bg-white text-black hover:bg-white/90"
                         : "bg-white/10 text-white hover:bg-white/15 border border-white/10"
                     }`}
@@ -149,10 +145,7 @@ export default function Pricing() {
 
                   <ul className="mt-8 space-y-3">
                     {features.map((f, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-white/75">
-                        <Check className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
-                        <span>{f}</span>
-                      </li>
+                      <li key={i} className="text-sm text-white/75">— {f}</li>
                     ))}
                   </ul>
                 </div>

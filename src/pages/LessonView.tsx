@@ -6,7 +6,6 @@ import { useLang } from "@/hooks/useLang";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import SiteShell from "@/components/SiteShell";
 
@@ -66,7 +65,7 @@ export default function LessonView() {
             to={`/courses/${course.slug}`}
             className="text-xs text-white/60 hover:text-white truncate"
           >
-            ← {course[lang].title}
+            {course[lang].title}
           </Link>
           <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
             <div
@@ -192,9 +191,8 @@ export default function LessonView() {
           {prev ? (
             <Link
               to={`/courses/${course.slug}/lessons/${prev.slug}`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-sm hover:bg-white/10"
+              className="inline-flex items-center px-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-sm hover:bg-white/10"
             >
-              <ChevronLeft className="h-4 w-4" />
               {isAr ? "السابق" : "Previous"}
             </Link>
           ) : (
@@ -202,13 +200,11 @@ export default function LessonView() {
           )}
           <button
             onClick={handleComplete}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
+            className="inline-flex items-center px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90"
           >
-            <Check className="h-4 w-4" />
             {next
               ? isAr ? "تم — التالي" : "Done — Next"
               : isAr ? "إنهاء الكورس" : "Finish course"}
-            {next && <ChevronRight className="h-4 w-4" />}
           </button>
         </div>
       </article>
