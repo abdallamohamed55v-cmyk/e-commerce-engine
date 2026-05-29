@@ -32,9 +32,6 @@ export default function Courses() {
     <SiteShell>
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 pt-20 pb-10">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-4">
-          {isAr ? "المكتبة" : "Library"}
-        </p>
         <h1 className="text-4xl md:text-6xl tracking-tighter font-light max-w-3xl">
           {isAr ? "كل الكورسات. مكان واحد." : "Every course. One place."}
         </h1>
