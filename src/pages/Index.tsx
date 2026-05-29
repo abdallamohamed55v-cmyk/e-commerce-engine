@@ -143,9 +143,6 @@ export default function Index() {
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
           <div className="max-w-2xl">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-3">
-              {isAr ? "كورسات مختارة" : "Featured courses"}
-            </p>
             <h2 className="text-3xl md:text-5xl tracking-tighter font-light">
               {isAr ? "ابدأ من هنا." : "Start here."}
             </h2>
