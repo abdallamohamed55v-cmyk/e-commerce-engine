@@ -2,7 +2,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { ReactNode, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang, setLang } from "@/hooks/useLang";
-import { Menu, X } from "lucide-react";
+
 
 interface Props {
   children: ReactNode;
@@ -99,10 +99,10 @@ export default function SiteShell({ children, bare = false }: Props) {
 
           <button
             onClick={() => setOpen((o) => !o)}
-            className="md:hidden p-2 rounded-lg bg-white/5 border border-white/10"
+            className="md:hidden px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs tracking-widest uppercase"
             aria-label="Menu"
           >
-            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {open ? (isAr ? "إغلاق" : "Close") : (isAr ? "قائمة" : "Menu")}
           </button>
         </div>
 
