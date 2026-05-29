@@ -247,9 +247,6 @@ export default function Index() {
       {/* PRICING TEASER */}
       <section className="max-w-5xl mx-auto px-6 py-20">
         <div className="rounded-3xl border border-blue-400/30 bg-gradient-to-br from-blue-500/[0.08] to-transparent p-10 md:p-14 text-center">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-blue-300/90 mb-4">
-            {isAr ? "العضوية" : "Membership"}
-          </p>
           <h2 className="text-3xl md:text-5xl tracking-tighter font-light max-w-2xl mx-auto">
             {isAr
               ? "ابدأ بأقل من قهوتك الأسبوعية."
