@@ -20,7 +20,7 @@ export default function LessonView() {
 
   const data = getLesson(slug || "", lessonSlug || "");
   if (!data) return <Navigate to="/courses" />;
-  if (loading)
+  if (loading || active === null)
     return (
       <SiteShell>
         <div className="p-20 text-center text-white/50 text-sm">Loading...</div>
