@@ -1,87 +1,76 @@
-# خطة إكمال موقع Shro.AI (منصة كورسات)
+# خطة الإنهاء الكامل لمنصة Shro.AI
 
-الهدف: منصة كورسات متكاملة تشتغل 100% — كل الصفحات موجودة، التصميم موحّد، الدفع شغّال، والمحتوى ظاهر.
+الهدف: موقع كورسات production-ready — كل صفحة نضيفة، كل flow شغّال، Backend سليم، وE2E tests بتأكد إن كل حاجة بتشتغل.
 
-## 1. مشاكل حرجة لازم تتحل أولاً
+## الحالة الحالية (مراجعة)
 
-- **قاعدة البيانات فاضية من الكورسات**: `courses=0`, `lessons=0` → صفحة `/courses` طالعة فاضية دلوقتي. هنشغّل edge function `seed-content` لتعبئة الكورسات والدروس والـ quizzes والمشاريع بالترجمات (AR/EN).
-- **خطة Lifetime بدون `dodo_product_id`**: الدفع للـ Lifetime هيفشل. لازم تتعمل في Dodo كـ One-time product ويتحط الـ ID في الجدول.
-- **مراجعة `dodo-webhook`**: التأكد إنه بيعالج الـ lifetime صح (period_end = +100 سنة) وبيحدّث `user_subscriptions`.
+**شغّال:**
+- 13 صفحة (Index, Courses, CourseDetail, LessonView, Auth, ResetPassword, Pricing, Account, About, Contact, CheckoutSuccess/Cancel, NotFound)
+- 15 كورس محلي (src/content/courses) كاملين بـ AR/EN + فيديو + quiz + مشروع
+- Auth + Subscription + lesson_progress + webhook (subscriptions + lifetime)
+- SiteShell موحّد للنفيجيشن/فوتر/مبدّل اللغة
 
-## 2. صفحات ناقصة (خاصة بالكورسات بس)
+**مشاكل لازم تتحل:**
+1. **`Index.tsx` مش بيستخدم `SiteShell`** — تصميم مختلف عن باقي الموقع، فيه `alert()` بدل toast، فورم وهمي، نفيجيشن منفصل. لازم يتعمل refactor.
+2. **خطة Lifetime** — `dodo_product_id` فاضي → الشراء هيفشل. (مهمة المستخدم في Dodo)
+3. **مفيش E2E tests** — مفيش playwright/vitest installed.
+4. **Polish ناقص:** SEO tags لكل صفحة، loading states، error boundaries، 404 صديق.
 
-| المسار | الوصف |
-|---|---|
-| `/reset-password` | إعادة تعيين كلمة السر — مطلوب لـ Supabase auth |
-| `/checkout/success` و `/checkout/cancel` | صفحات نتيجة الدفع بعد العودة من Dodo |
-| `/about` | تعريف بالمنصة والمدرسين |
-| `/contact` | فورم تواصل يكتب في `contact_messages` |
+## التنفيذ
 
-(مفيش marketplace/cart/seller — الموقع كورسات فقط)
+### 1. توحيد صفحة Index على SiteShell
+- إعادة بناء `Index.tsx` ليستخدم `SiteShell` (نفس الهيدر/فوتر/مبدّل اللغة).
+- استبدال `alert()` بـ `toast`.
+- استبدال الفورم الوهمي بكتابة فعلية في `contact_messages` (أو حذفه وتوجيه لـ `/contact`).
+- إبقاء الـ hero video والـ sections الجمالية لكن مع التوكنات الموحّدة.
+- عرض ديناميكي لأحدث 4 كورسات من `@/content`.
+- ربط كل CTAs بـ `/courses` و `/pricing` فعلياً.
 
-## 3. تحسينات على الصفحات الموجودة
+### 2. تحسينات صغيرة على باقي الصفحات
+- **SEO**: استخدام `Seo.tsx` الموجود في كل صفحة (title + description + canonical).
+- **Account**: تجميع الـ progress per-course (بدل total فقط) + شريط تقدم لكل كورس.
+- **NotFound**: زرار رجوع للرئيسية + تصميم على SiteShell.
+- **LessonView**: زرار "Mark complete" يحفظ بدون quiz لو مفيش quiz.
+- **Pricing**: إضافة badge "أكثر شيوعاً" للـ Yearly.
+- **CourseDetail**: عرض المشروع النهائي (`course.project`).
 
-- **`/` (Index)**: ربط CTAs بـ `/courses` و `/pricing` فعلياً، عرض أحدث 3-4 كورسات من الداتابيز.
-- **`/courses`**: فلترة بالـ level و topic، بحث، عرض حالة الاشتراك.
-- **`/courses/:slug`**: عرض الـ outcomes والـ prerequisites وقائمة الدروس مع قفل الدروس للي مش مشترك.
-- **`/courses/:slug/lessons/:lessonSlug`**: 
-  - markdown renderer للمحتوى
-  - quiz في آخر كل درس مع حفظ النتيجة في `lesson_progress`
-  - زرار "تم" + التنقل للدرس التالي
-  - شريط تقدم
-  - حماية: لو الكورس مدفوع والمستخدم مش مشترك → redirect للـ pricing
-- **`/account`**: تبويبات (My Courses مع progress، Subscription، Referrals، Settings).
-- **`/pricing`**: (شغّال) — تأكيد إن الـ 3 خطط ظاهرين جنب بعض.
-- **`/auth`**: إضافة "Forgot password" link.
+### 3. Backend
+- مراجعة edge functions (deploy auto). 
+- التأكد إن `dodo-webhook` بيتعامل مع `payment.failed` للـ lifetime.
+- إضافة تعليمات واضحة للمستخدم لإكمال إعداد Dodo Lifetime product.
 
-## 4. توحيد التصميم والربط
+### 4. E2E Tests (Playwright)
+تثبيت Playwright وإنشاء tests:
+- `home.spec.ts`: الصفحة الرئيسية تفتح + الـ CTAs بتوصل للأماكن الصح.
+- `courses.spec.ts`: قائمة الكورسات تظهر، الفلترة شغّالة، البحث شغّال، الكليك على كورس بيوديني لصفحة التفاصيل.
+- `course-detail.spec.ts`: صفحة كورس تظهر outcomes/prerequisites + قائمة الدروس، والدروس مقفولة لو مش مشترك.
+- `auth.spec.ts`: صفحة Auth تتبدّل بين signin/signup + لينك forgot password بيشتغل.
+- `pricing.spec.ts`: 3 خطط بتظهر جنب بعض بأسعار صحيحة، زرار subscribe بيوديني لـ /auth لو مش مسجّل.
+- `contact.spec.ts`: ملء الفورم وإرساله بيكتب في `contact_messages`.
+- `i18n.spec.ts`: تبديل اللغة بيغيّر `dir` و النصوص.
+- `nav.spec.ts`: كل لينكات النفيجيشن في الهيدر والفوتر شغّالة.
 
-- التأكد إن كل الصفحات بتستخدم `SiteShell` (نفس النيف بار/فوتر/مبدل اللغة).
-- نيف بار موحّد: Home / Courses / Pricing / About / Contact + Account/Login.
-- فوتر موحّد: روابط + social + Terms/Privacy.
-- نفس الـ design tokens (الثيم الداكن الأزرق) في كل الصفحات.
+السكريبت في `package.json`: `"test:e2e": "playwright test"`.
 
-## 5. التحقق والـ QA
+### 5. Verification النهائي
+- `bun run build` نظيف.
+- تشغيل Playwright tests كلها → خضراء.
+- فحص يدوي في الـ browser للـ flows الحرجة (signup → reset password → pricing → checkout redirect).
+- `supabase--linter` للتأكد من سلامة RLS.
 
-1. `bun run build` بدون أخطاء.
-2. كل route يفتح بدون runtime errors.
-3. flow كامل: signup → login → فتح كورس مجاني → عمل quiz → التقدم محفوظ.
-4. flow الدفع: شراء Monthly في sandbox → ظهور الاشتراك في `/account` → فتح كورس مدفوع.
-5. اختبار شراء Lifetime بعد ضبط `dodo_product_id`.
-6. `supabase--linter` للتأكد من سلامة RLS.
-7. تبديل اللغة AR/EN يشتغل في كل الصفحات + RTL/LTR صح.
+## تنبيهات للمستخدم (مهام خارج الكود)
 
-## 6. ترتيب التنفيذ
+1. **Dodo Lifetime product**: أنشئ منتج One-time بـ $200 وحدّث الـ ID:
+   ```sql
+   UPDATE subscription_plans SET dodo_product_id = 'pdt_xxx' WHERE slug = 'lifetime';
+   ```
+2. **Email templates في Supabase**: تأكد إن template "Reset Password" مفعّل و الـ redirect URL `*/reset-password`.
+3. **Webhook URL في Dodo dashboard**: لازم يكون على `https://jdowaletwmqjhvmaervb.functions.supabase.co/dodo-webhook` مع تفعيل أحداث `payment.*` و `subscription.*`.
 
-**Sprint 1 — تعبئة وإصلاح حرج**
-- تشغيل `seed-content` لملء الكورسات والدروس
-- إنشاء `/reset-password`
-- مراجعة `dodo-webhook` لدعم lifetime
-- إضافة `dodo_product_id` للخطة Lifetime (تعليمات للمستخدم)
+## ترتيب التنفيذ (تقريباً 15 دقيقة)
+1. Refactor `Index.tsx` (5 د)
+2. SEO + small page polish (3 د)
+3. تثبيت Playwright + كتابة 8 tests (5 د)
+4. Build + run tests + إصلاح أي خطأ (2 د)
 
-**Sprint 2 — تجربة الكورس**
-- تحسين `/courses/:slug` (lessons list + lock للمدفوع)
-- تحسين `LessonView` (markdown + quiz + progress + next/prev)
-- شريط تقدم في `/account`
-
-**Sprint 3 — صفحات الدفع والتواصل**
-- `/checkout/success` و `/checkout/cancel`
-- `/about` و `/contact` (مع كتابة في `contact_messages`)
-
-**Sprint 4 — Polish**
-- SEO meta لكل صفحة (Seo.tsx موجود)
-- ربط CTAs في `/` بداتا حقيقية
-- اختبار شامل AR/EN
-- إصلاح أي bug من الـ console/network logs
-
----
-
-## تفاصيل تقنية
-
-- **Routing**: إضافة الـ 4 routes الجديدة في `src/App.tsx`.
-- **Data**: كل الـ fetching بـ `@tanstack/react-query` من جداول `courses`, `lessons`, `lesson_translations`, `quizzes`, `lesson_progress`.
-- **i18n**: النصوص الجديدة في `src/i18n/`.
-- **Auth guard**: hook بسيط يتأكد من `useAuth` + `has_active_subscription` قبل عرض درس مدفوع.
-- **Markdown**: استخدام مكتبة موجودة (react-markdown) لعرض `content_markdown`.
-
-تحب أبدأ بـ Sprint 1 على طول؟
+ابدأ على طول؟
