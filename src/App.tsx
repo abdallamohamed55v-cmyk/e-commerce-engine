@@ -18,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutCancel from "./pages/CheckoutCancel";
 import NotFound from "./pages/NotFound";
+import ImportCourse from "./pages/ImportCourse";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+            <Route path="/admin/import-course" element={<ImportCourse />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
