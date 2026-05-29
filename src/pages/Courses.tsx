@@ -1,87 +1,218 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { courses, CATEGORIES } from "@/content";
 import { getCourseImage } from "@/content/courseImages";
 import type { CourseCategory } from "@/content";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Clock, BookOpen } from "lucide-react";
+import { Clock, BookOpen, Search, ArrowUpRight } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
-
 
 export default function Courses() {
   const lang = useLang();
+  const isAr = lang === "ar";
   const [filter, setFilter] = useState<CourseCategory | "all">("all");
+  const [query, setQuery] = useState("");
 
-  const visible = filter === "all" ? courses : courses.filter((c) => c.category === filter);
+  const visible = useMemo(() => {
+    const base = filter === "all" ? courses : courses.filter((c) => c.category === filter);
+    if (!query.trim()) return base;
+    const q = query.toLowerCase();
+    return base.filter(
+      (c) =>
+        c[lang].title.toLowerCase().includes(q) ||
+        c[lang].tagline.toLowerCase().includes(q)
+    );
+  }, [filter, query, lang]);
+
+  const categoryLabel = (key: CourseCategory) => {
+    const c = CATEGORIES.find((x) => x.key === key);
+    return c ? (isAr ? c.ar : c.en) : key;
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">{lang === "ar" ? "كل الكورسات" : "All Courses"}</h1>
-        <p className="text-muted-foreground mb-8">
-          {lang === "ar"
-            ? "كورسات مجانية مختارة من أفضل المصادر العالمية — AI، برمجة، علم نفس، أعمال."
-            : "Free curated courses from the best sources worldwide — AI, programming, psychology, business."}
-        </p>
-
-        <div className="flex flex-wrap gap-2 mb-10">
-          <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>
-            {lang === "ar" ? "الكل" : "All"} ({courses.length})
-          </Button>
-          {CATEGORIES.map((cat) => {
-            const count = courses.filter((c) => c.category === cat.key).length;
-            return (
-              <Button key={cat.key} variant={filter === cat.key ? "default" : "outline"} size="sm" onClick={() => setFilter(cat.key)}>
-                {lang === "ar" ? cat.ar : cat.en} ({count})
-              </Button>
-            );
-          })}
+    <div dir={isAr ? "rtl" : "ltr"} className="min-h-screen bg-black text-white font-geist">
+      {/* Nav */}
+      <header className="border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link to="/" className="text-lg font-semibold tracking-tight">
+            Shro<span className="text-blue-400">.AI</span>
+          </Link>
+          <nav className="flex items-center gap-6 text-sm text-white/70">
+            <Link to="/pricing" className="hover:text-white transition">
+              {isAr ? "الأسعار" : "Pricing"}
+            </Link>
+            <Link
+              to="/auth"
+              className="px-4 py-1.5 rounded-full bg-white text-black text-xs font-medium hover:bg-white/90 transition"
+            >
+              {isAr ? "تسجيل الدخول" : "Sign in"}
+            </Link>
+          </nav>
         </div>
+      </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {visible.map((c) => {
-            const l = c[lang];
-            const cat = CATEGORIES.find((x) => x.key === c.category);
-            return (
-              <Link key={c.slug} to={`/courses/${c.slug}`}>
-                <Card className="overflow-hidden h-full hover:scale-[1.02] transition group">
-                  {getCourseImage(c.slug) ? (
-                    <img
-                      src={getCourseImage(c.slug)}
-                      alt={l.title}
-                      loading="lazy"
-                      width={1024}
-                      height={1024}
-                      className="w-full aspect-square object-cover"
-                    />
-                  ) : (
-                    <div className={`aspect-square bg-gradient-to-br ${c.coverGradient}`} />
-                  )}
+      {/* Hero */}
+      <section className="max-w-7xl mx-auto px-6 pt-20 pb-10">
+        <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80 mb-4">
+          {isAr ? "المكتبة" : "Library"}
+        </p>
+        <h1 className="text-4xl md:text-6xl tracking-tighter font-light max-w-3xl">
+          {isAr ? "كل الكورسات. مكان واحد." : "Every course. One place."}
+        </h1>
+        <p className="mt-5 text-white/60 max-w-xl text-base leading-relaxed">
+          {isAr
+            ? "كورسات منتقاة في الذكاء الاصطناعي، البرمجة، علم النفس، والأعمال — مفتوحة بالكامل مع اشتراكك."
+            : "Curated courses across AI, programming, psychology and business — fully unlocked with your membership."}
+        </p>
+      </section>
 
-                  <div className="p-6 space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      {cat && <Badge>{lang === "ar" ? cat.ar : cat.en}</Badge>}
-                      <Badge variant="secondary">{c.level}</Badge>
-                      <Badge variant="outline" className="gap-1">
+      {/* Filters */}
+      <section className="max-w-7xl mx-auto px-6 sticky top-0 z-20 bg-black/80 backdrop-blur-md border-y border-white/5 py-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
+            <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
+              {isAr ? "الكل" : "All"}
+              <span className="text-white/40 ml-1.5">{courses.length}</span>
+            </FilterPill>
+            {CATEGORIES.map((cat) => {
+              const count = courses.filter((c) => c.category === cat.key).length;
+              return (
+                <FilterPill
+                  key={cat.key}
+                  active={filter === cat.key}
+                  onClick={() => setFilter(cat.key)}
+                >
+                  {isAr ? cat.ar : cat.en}
+                  <span className="text-white/40 ml-1.5">{count}</span>
+                </FilterPill>
+              );
+            })}
+          </div>
+
+          <div className="relative md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={isAr ? "ابحث عن كورس..." : "Search courses..."}
+              className="w-full bg-white/5 border border-white/10 rounded-full pl-10 pr-4 py-2 text-sm placeholder:text-white/40 focus:outline-none focus:border-white/30 transition"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Grid */}
+      <section className="max-w-7xl mx-auto px-6 py-12">
+        {visible.length === 0 ? (
+          <div className="border border-dashed border-white/10 rounded-3xl py-24 text-center text-white/50 text-sm">
+            {isAr ? "لا توجد نتائج" : "No courses match your search."}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+            {visible.map((c) => {
+              const l = c[lang];
+              const img = getCourseImage(c.slug);
+              return (
+                <Link
+                  key={c.slug}
+                  to={`/courses/${c.slug}`}
+                  className="group block"
+                >
+                  <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/5">
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={l.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                      />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-br ${c.coverGradient}`} />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-transparent" />
+
+                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur border border-white/10 text-[10px] uppercase tracking-wider text-white/80">
+                        {categoryLabel(c.category)}
+                      </span>
+                    </div>
+
+                    <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 backdrop-blur border border-white/15 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                      <ArrowUpRight className="h-4 w-4" />
+                    </div>
+
+                    <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 text-[11px] text-white/70">
+                      <span className="inline-flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {Math.round(c.durationMinutes / 60)}h
-                      </Badge>
-                    </div>
-                    <h3 className="text-xl font-bold group-hover:text-primary transition">{l.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{l.tagline}</p>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <BookOpen className="h-3 w-3" />
-                      {c.lessons.length} {lang === "ar" ? "درس" : "lessons"}
+                      </span>
+                      <span className="w-px h-3 bg-white/20" />
+                      <span className="inline-flex items-center gap-1">
+                        <BookOpen className="h-3 w-3" />
+                        {c.lessons.length} {isAr ? "درس" : "lessons"}
+                      </span>
+                      <span className="w-px h-3 bg-white/20" />
+                      <span className="uppercase tracking-wider text-white/60">{c.level}</span>
                     </div>
                   </div>
-                </Card>
-              </Link>
-            );
-          })}
+
+                  <div className="mt-4 px-1">
+                    <h3 className="text-lg font-medium tracking-tight group-hover:text-blue-300 transition">
+                      {l.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm text-white/55 line-clamp-2 leading-relaxed">
+                      {l.tagline}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* CTA */}
+      <section className="border-t border-white/5 mt-12">
+        <div className="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h2 className="text-2xl md:text-3xl tracking-tighter font-light">
+              {isAr ? "اشتراك واحد. كل الكورسات." : "One membership. Every course."}
+            </h2>
+            <p className="mt-2 text-white/60 text-sm">
+              {isAr ? "ابدأ بـ 14 يوم تجربة مجانية." : "Start with a 14-day free trial."}
+            </p>
+          </div>
+          <Link
+            to="/pricing"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition self-start"
+          >
+            {isAr ? "اعرض الخطط" : "View plans"}
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
         </div>
-      </div>
+      </section>
     </div>
+  );
+}
+
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-1.5 rounded-full text-xs font-medium transition border ${
+        active
+          ? "bg-white text-black border-white"
+          : "bg-white/5 text-white/70 border-white/10 hover:text-white hover:border-white/25"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
