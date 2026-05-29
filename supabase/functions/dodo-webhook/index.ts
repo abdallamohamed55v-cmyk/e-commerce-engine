@@ -57,9 +57,9 @@ Deno.serve(async (req) => {
       }, { onConflict: 'dodo_subscription_id' });
     } else if (type === 'subscription.cancelled' || type === 'subscription.expired') {
       await admin.from('user_subscriptions')
-        .update({ status: 'cancelled' })
+        .update({ status: 'canceled' })
         .eq('dodo_subscription_id', data.subscription_id);
-    } else if (type === 'subscription.failed') {
+    } else if (type === 'subscription.failed' || type === 'payment.failed') {
       await admin.from('user_subscriptions')
         .update({ status: 'past_due' })
         .eq('dodo_subscription_id', data.subscription_id);
