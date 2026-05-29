@@ -49,7 +49,7 @@ export default function Pricing() {
     if (error || !data?.checkout_url) {
       toast({
         title: isAr ? "خطأ" : "Error",
-        description: error?.message || "Failed to create checkout",
+        description: data?.message || data?.error || error?.message || "Failed to create checkout",
         variant: "destructive",
       });
       return;
