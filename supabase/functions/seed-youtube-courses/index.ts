@@ -122,9 +122,9 @@ Deno.serve(async (req) => {
     if (!apiKey) throw new Error("YOUTUBE_API_KEY not configured");
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const body = await req.json().catch(() => ({}));
-    const playlists: { id: string; level: string }[] = body.playlists?.length ? body.playlists : CURATED_PLAYLISTS;
+    const playlists: { id: string; level: string; lang?: string }[] = body.playlists?.length ? body.playlists : CURATED_PLAYLISTS;
     const results = [];
-    for (const p of playlists) results.push(await importPlaylist(admin, apiKey, p.id, p.level));
+    for (const p of playlists) results.push(await importPlaylist(admin, apiKey, p.id, p.level, p.lang || "ar"));
     return new Response(JSON.stringify({ success: true, results }, null, 2), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
