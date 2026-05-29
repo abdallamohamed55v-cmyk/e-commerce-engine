@@ -13,9 +13,8 @@ const buttonVariants = cva(
         destructive: "liquid-glass text-white !bg-[linear-gradient(135deg,hsla(0,84%,60%,0.85),hsla(0,84%,50%,0.7))]",
         outline: "liquid-glass text-white",
         secondary: "liquid-glass text-white",
-        ghost: "text-white hover:bg-white/5 !shadow-none",
+        ghost: "liquid-glass text-white !shadow-none",
         link: "text-primary underline-offset-4 hover:underline",
-        heroSecondary: "liquid-glass text-foreground hover:bg-white/[0.04] transition-colors",
       },
 
       size: {
