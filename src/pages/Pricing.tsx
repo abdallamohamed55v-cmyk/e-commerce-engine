@@ -25,7 +25,6 @@ export default function Pricing() {
   const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
-  const [cycle, setCycle] = useState<"month" | "year" | "lifetime">("year");
 
   useEffect(() => {
     supabase
