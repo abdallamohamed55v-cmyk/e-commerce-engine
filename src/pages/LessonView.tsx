@@ -7,6 +7,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import SiteShell from "@/components/SiteShell";
+import LessonTutor from "@/components/LessonTutor";
 
 export default function LessonView() {
   const { slug, lessonSlug } = useParams();
@@ -133,6 +134,13 @@ export default function LessonView() {
           </button>
         </div>
       </article>
+
+      <LessonTutor
+        courseSlug={course.slug}
+        lessonSlug={lesson.slug}
+        lessonTitle={lesson.title}
+        lang={lang}
+      />
     </SiteShell>
   );
 }
