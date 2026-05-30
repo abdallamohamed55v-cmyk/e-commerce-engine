@@ -85,7 +85,7 @@ async function generateImage(imagePrompt: string): Promise<Uint8Array> {
 }
 
 
-async function processCourse(admin: any, course: any, force: boolean) {
+async function processCourse(admin: any, course: any, force: boolean, forceImage: boolean) {
   const { data: lessons } = await admin
     .from("lessons")
     .select("id")
