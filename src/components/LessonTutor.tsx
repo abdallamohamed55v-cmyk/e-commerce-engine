@@ -71,7 +71,6 @@ export default function LessonTutor({ courseSlug, lessonSlug, lessonTitle, lang 
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-blue-500 text-white text-sm font-medium shadow-lg shadow-blue-500/30 hover:bg-blue-600 transition"
       >
-        <Sparkles className="w-4 h-4" />
         {isAr ? "اسأل المدرس الذكي" : "Ask AI Tutor"}
       </button>
     );
