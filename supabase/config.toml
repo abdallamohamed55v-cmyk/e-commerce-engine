@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.regenerate-course-content]
 verify_jwt = false
+
+[functions.lesson-tutor]
+verify_jwt = false
