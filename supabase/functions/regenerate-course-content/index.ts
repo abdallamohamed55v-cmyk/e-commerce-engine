@@ -45,10 +45,11 @@ async function generateMeta(rawTitle: string, rawDesc: string, slug: string, fir
 
 STRICT RULES:
 - NEVER mention any person's name, YouTuber, channel name, organisation, university, "in Arabic", "بالعربي", "free", episode counts, or the source platform.
+- NEVER use emoji or symbol characters anywhere in titles, taglines, or descriptions.
 - Title must be short (3-7 words), descriptive of the SUBJECT only.
 - Tagline: one punchy line (max 90 chars).
 - Description: 2-3 sentences, focused on what the learner will gain.
-- Also produce an English image_prompt describing a sleek modern editorial cover image for this course (NO TEXT in the image, no logos, no people's faces, just an evocative abstract / object / scene with rich lighting on a dark background).
+- image_prompt: subject only (no style words) — a cartoon magazine cover illustration of the topic, no book, no text, no people faces.
 
 RAW DATA:
 slug: ${slug}
