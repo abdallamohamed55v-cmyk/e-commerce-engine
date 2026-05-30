@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useLang } from "@/hooks/useLang";
-import { courses } from "@/content";
-import { getCourseImage } from "@/content/courseImages";
+import { useDbCourses } from "@/hooks/useDbCourses";
 import SiteShell from "@/components/SiteShell";
 
 export default function Account() {
