@@ -164,7 +164,8 @@ Deno.serve(async (req) => {
 
     let q = admin.from("courses").select("id, slug, cover_image_url").eq("is_published", true);
     if (onlySlug) q = q.eq("slug", onlySlug);
-    const { data: courses, error } = await q.order("created_at", { ascending: true }).limit(limit * 4);
+    // Prefer courses without a clean cover first so we don't waste the budget scanning already-done ones.
+    const { data: courses, error } = await q.order("cover_image_url", { ascending: true, nullsFirst: true }).order("created_at", { ascending: true });
     if (error) throw error;
 
     const results = [];
@@ -173,8 +174,9 @@ Deno.serve(async (req) => {
       if (processed >= limit) break;
       try {
         const r = await processCourse(admin, c, force);
+        if (r.status === "skipped") continue;
         results.push(r);
-        if (r.status === "done") processed++;
+        processed++;
       } catch (e: any) {
         results.push({ slug: c.slug, status: "error", error: String(e?.message || e) });
         processed++;
