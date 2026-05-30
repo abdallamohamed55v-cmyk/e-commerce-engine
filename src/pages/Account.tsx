@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useLang } from "@/hooks/useLang";
-import { courses } from "@/content";
-import { getCourseImage } from "@/content/courseImages";
+import { useDbCourses } from "@/hooks/useDbCourses";
 import SiteShell from "@/components/SiteShell";
 
 export default function Account() {
@@ -13,6 +12,7 @@ export default function Account() {
   const isAr = lang === "ar";
   const { user, loading } = useAuth();
   const { subscription, loading: subscriptionLoading } = useSubscription();
+  const { data: courses = [] } = useDbCourses(lang);
   const [progress, setProgress] = useState<any[]>([]);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function Account() {
   if (!user) return <Navigate to="/auth?redirect=/account" />;
 
   const totalDone = progress.length;
-  const totalLessons = courses.reduce((acc, c) => acc + c.lessons.length, 0);
+  const totalLessons = courses.reduce((acc, c) => acc + c.lessonCount, 0);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -142,8 +142,8 @@ export default function Account() {
         <div className="space-y-2">
           {courses.map((c) => {
             const done = progress.filter((p) => p.course_slug === c.slug).length;
-            const pct = Math.round((done / c.lessons.length) * 100);
-            const img = getCourseImage(c.slug);
+            const total = Math.max(1, c.lessonCount);
+            const pct = Math.round((done / total) * 100);
             return (
               <Link
                 key={c.slug}
@@ -151,14 +151,19 @@ export default function Account() {
                 className="flex items-center gap-4 p-3 rounded-2xl border border-white/5 hover:border-white/15 hover:bg-white/[0.03] transition group"
               >
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/5 shrink-0">
-                  {img ? (
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  {c.coverImageUrl ? (
+                    <img src={c.coverImageUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${c.coverGradient}`} />
+                    <div
+                      className="w-full h-full"
+                      style={{
+                        background: `linear-gradient(135deg, ${c.accentColor || "#6366f1"}, #000)`,
+                      }}
+                    />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{c[lang].title}</p>
+                  <p className="font-medium text-sm truncate">{c.title}</p>
                   <div className="h-1 bg-white/10 rounded-full mt-2 overflow-hidden">
                     <div
                       className="h-full bg-blue-400 transition-all"
@@ -167,7 +172,7 @@ export default function Account() {
                   </div>
                 </div>
                 <span className="text-xs text-white/50 tabular-nums shrink-0">
-                  {done}/{c.lessons.length}
+                  {done}/{c.lessonCount}
                 </span>
               </Link>
             );

@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import SiteShell from "@/components/SiteShell";
 import { useLang } from "@/hooks/useLang";
-import { courses, CATEGORIES } from "@/content";
-import { getCourseImage } from "@/content/courseImages";
+import { useDbCourses } from "@/hooks/useDbCourses";
+import { CATEGORIES } from "@/lib/courses-db";
 
 const HERO_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4";
@@ -11,9 +11,10 @@ const HERO_VIDEO =
 export default function Index() {
   const lang = useLang();
   const isAr = lang === "ar";
+  const { data: courses = [] } = useDbCourses(lang);
 
   const featured = courses.slice(0, 6);
-  const totalLessons = courses.reduce((s, c) => s + c.lessons.length, 0);
+  const totalLessons = courses.reduce((s, c) => s + c.lessonCount, 0);
   const totalHours = Math.round(
     courses.reduce((s, c) => s + c.durationMinutes, 0) / 60
   );
@@ -156,45 +157,46 @@ export default function Index() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-          {featured.map((c) => {
-            const l = c[lang];
-            const img = getCourseImage(c.slug);
-            return (
-              <Link
-                key={c.slug}
-                to={`/courses/${c.slug}`}
-                className="group block"
-              >
-                <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/5">
-                  {img ? (
-                    <img
-                      src={img}
-                      alt={l.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                    />
-                  ) : (
-                    <div
-                      className={`w-full h-full bg-gradient-to-br ${c.coverGradient}`}
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                  <div className="absolute bottom-4 start-4 end-4 text-[11px] text-white/70">
-                    {c.lessons.length} {isAr ? "درس" : "lessons"} ·{" "}
-                    {Math.round(c.durationMinutes / 60)}h
-                  </div>
+          {featured.map((c) => (
+            <Link
+              key={c.slug}
+              to={`/courses/${c.slug}`}
+              className="group block"
+            >
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/5">
+                {c.coverImageUrl ? (
+                  <img
+                    src={c.coverImageUrl}
+                    alt={c.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      background: `linear-gradient(135deg, ${c.accentColor || "#6366f1"}, #000)`,
+                    }}
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <div className="absolute bottom-4 start-4 end-4 text-[11px] text-white/70">
+                  {c.lessonCount} {isAr ? "درس" : "lessons"} ·{" "}
+                  {Math.max(1, Math.round(c.durationMinutes / 60))}h
                 </div>
-                <div className="mt-4 px-1">
-                  <h3 className="text-lg font-medium tracking-tight group-hover:text-blue-300 transition">
-                    {l.title}
-                  </h3>
+              </div>
+              <div className="mt-4 px-1">
+                <h3 className="text-lg font-medium tracking-tight group-hover:text-blue-300 transition line-clamp-2">
+                  {c.title}
+                </h3>
+                {c.tagline && (
                   <p className="mt-1.5 text-sm text-white/55 line-clamp-2">
-                    {l.tagline}
+                    {c.tagline}
                   </p>
-                </div>
-              </Link>
-            );
-          })}
+                )}
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 

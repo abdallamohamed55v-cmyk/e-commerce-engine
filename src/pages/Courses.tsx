@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
-import { courses, CATEGORIES } from "@/content";
-import { getCourseImage } from "@/content/courseImages";
-import type { CourseCategory } from "@/content";
+import { CATEGORIES, type CourseCategory } from "@/lib/courses-db";
+import { useDbCourses } from "@/hooks/useDbCourses";
 import { useLang } from "@/hooks/useLang";
 import SiteShell from "@/components/SiteShell";
 
@@ -11,6 +10,7 @@ export default function Courses() {
   const isAr = lang === "ar";
   const [filter, setFilter] = useState<CourseCategory | "all">("all");
   const [query, setQuery] = useState("");
+  const { data: courses = [], isLoading } = useDbCourses(lang);
 
   const visible = useMemo(() => {
     const base = filter === "all" ? courses : courses.filter((c) => c.category === filter);
@@ -18,10 +18,10 @@ export default function Courses() {
     const q = query.toLowerCase();
     return base.filter(
       (c) =>
-        c[lang].title.toLowerCase().includes(q) ||
-        c[lang].tagline.toLowerCase().includes(q)
+        c.title.toLowerCase().includes(q) ||
+        (c.tagline || "").toLowerCase().includes(q)
     );
-  }, [filter, query, lang]);
+  }, [filter, query, courses]);
 
   const categoryLabel = (key: CourseCategory) => {
     const c = CATEGORIES.find((x) => x.key === key);
@@ -30,7 +30,6 @@ export default function Courses() {
 
   return (
     <SiteShell>
-      {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 pt-20 pb-10">
         <h1 className="text-4xl md:text-6xl tracking-tighter font-light max-w-3xl">
           {isAr ? "كل الكورسات. مكان واحد." : "Every course. One place."}
@@ -42,7 +41,6 @@ export default function Courses() {
         </p>
       </section>
 
-      {/* Filters */}
       <section className="max-w-7xl mx-auto px-6 sticky top-16 z-20 bg-black/80 backdrop-blur-md border-y border-white/5 py-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-wrap gap-2">
@@ -52,6 +50,7 @@ export default function Courses() {
             </FilterPill>
             {CATEGORIES.map((cat) => {
               const count = courses.filter((c) => c.category === cat.key).length;
+              if (count === 0) return null;
               return (
                 <FilterPill
                   key={cat.key}
@@ -76,62 +75,67 @@ export default function Courses() {
         </div>
       </section>
 
-      {/* Grid */}
       <section className="max-w-7xl mx-auto px-6 py-12">
-        {visible.length === 0 ? (
+        {isLoading ? (
+          <div className="py-24 text-center text-white/50 text-sm">
+            {isAr ? "جاري التحميل..." : "Loading..."}
+          </div>
+        ) : visible.length === 0 ? (
           <div className="border border-dashed border-white/10 rounded-3xl py-24 text-center text-white/50 text-sm">
             {isAr ? "لا توجد نتائج" : "No courses match your search."}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
-            {visible.map((c) => {
-              const l = c[lang];
-              const img = getCourseImage(c.slug);
-              return (
-                <Link key={c.slug} to={`/courses/${c.slug}`} className="group block">
-                  <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/5">
-                    {img ? (
-                      <img
-                        src={img}
-                        alt={l.title}
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                      />
-                    ) : (
-                      <div className={`w-full h-full bg-gradient-to-br ${c.coverGradient}`} />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-transparent" />
+            {visible.map((c) => (
+              <Link key={c.slug} to={`/courses/${c.slug}`} className="group block">
+                <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/5">
+                  {c.coverImageUrl ? (
+                    <img
+                      src={c.coverImageUrl}
+                      alt={c.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full"
+                      style={{
+                        background: `linear-gradient(135deg, ${c.accentColor || "#6366f1"}, #000)`,
+                      }}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-transparent" />
 
-                    <div className="absolute top-4 start-4">
-                      <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur border border-white/10 text-[10px] uppercase tracking-wider text-white/80">
-                        {categoryLabel(c.category)}
-                      </span>
-                    </div>
-
-                    <div className="absolute bottom-4 start-4 end-4 flex items-center gap-3 text-[11px] text-white/70">
-                      <span>{Math.round(c.durationMinutes / 60)}h</span>
-                      <span className="w-px h-3 bg-white/20" />
-                      <span>{c.lessons.length} {isAr ? "درس" : "lessons"}</span>
-                      <span className="w-px h-3 bg-white/20" />
-                      <span className="uppercase tracking-wider text-white/60">{c.level}</span>
-                    </div>
+                  <div className="absolute top-4 start-4">
+                    <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur border border-white/10 text-[10px] uppercase tracking-wider text-white/80">
+                      {categoryLabel(c.category)}
+                    </span>
                   </div>
 
-                  <div className="mt-4 px-1">
-                    <h3 className="text-lg font-medium tracking-tight group-hover:text-blue-300 transition">
-                      {l.title}
-                    </h3>
+                  <div className="absolute bottom-4 start-4 end-4 flex items-center gap-3 text-[11px] text-white/70">
+                    <span>{Math.max(1, Math.round(c.durationMinutes / 60))}h</span>
+                    <span className="w-px h-3 bg-white/20" />
+                    <span>{c.lessonCount} {isAr ? "درس" : "lessons"}</span>
+                    <span className="w-px h-3 bg-white/20" />
+                    <span className="uppercase tracking-wider text-white/60">{c.level}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 px-1">
+                  <h3 className="text-lg font-medium tracking-tight group-hover:text-blue-300 transition line-clamp-2">
+                    {c.title}
+                  </h3>
+                  {c.tagline && (
                     <p className="mt-1.5 text-sm text-white/55 line-clamp-2 leading-relaxed">
-                      {l.tagline}
+                      {c.tagline}
                     </p>
-                  </div>
-                </Link>
-              );
-            })}
+                  )}
+                </div>
+              </Link>
+            ))}
           </div>
         )}
       </section>
-
     </SiteShell>
   );
 }

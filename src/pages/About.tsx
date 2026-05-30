@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { useLang } from "@/hooks/useLang";
 import SiteShell from "@/components/SiteShell";
-import { courses } from "@/content";
+import { useDbCourses } from "@/hooks/useDbCourses";
 
 export default function About() {
   const lang = useLang();
   const isAr = lang === "ar";
+  const { data: courses = [] } = useDbCourses(lang);
 
-  const totalLessons = courses.reduce((sum, c) => sum + c.lessons.length, 0);
+  const totalLessons = courses.reduce((sum, c) => sum + c.lessonCount, 0);
   const totalHours = Math.round(
     courses.reduce((sum, c) => sum + c.durationMinutes, 0) / 60
   );
