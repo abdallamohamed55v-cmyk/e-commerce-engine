@@ -68,14 +68,25 @@ export async function fetchCourseSummaries(lang: Lang): Promise<CourseSummary[]>
   if (!courses?.length) return [];
 
   const ids = courses.map((c) => c.id);
-  const [{ data: trans }, { data: lessonCounts }] = await Promise.all([
-    supabase
-      .from("course_translations")
-      .select("course_id, lang_code, title, tagline, description")
-      .in("course_id", ids),
-    supabase.from("lessons").select("course_id").in("course_id", ids).limit(10000),
-  ]);
+  const { data: trans } = await supabase
+    .from("course_translations")
+    .select("course_id, lang_code, title, tagline, description")
+    .in("course_id", ids);
 
+  // Paginate lessons fetch — Supabase caps responses at ~1000 rows per request
+  const lessonCounts: { course_id: string }[] = [];
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data: page, error: lerr } = await supabase
+      .from("lessons")
+      .select("course_id")
+      .in("course_id", ids)
+      .range(from, from + PAGE - 1);
+    if (lerr) throw lerr;
+    if (!page || page.length === 0) break;
+    lessonCounts.push(...page);
+    if (page.length < PAGE) break;
+  }
 
   const transByCourse = new Map<string, Map<string, any>>();
   (trans || []).forEach((t) => {
@@ -83,7 +94,7 @@ export async function fetchCourseSummaries(lang: Lang): Promise<CourseSummary[]>
     transByCourse.get(t.course_id)!.set(t.lang_code, t);
   });
   const countByCourse = new Map<string, number>();
-  (lessonCounts || []).forEach((l) => {
+  lessonCounts.forEach((l) => {
     countByCourse.set(l.course_id, (countByCourse.get(l.course_id) || 0) + 1);
   });
 
