@@ -239,6 +239,7 @@ Deno.serve(async (req) => {
     const limit = Math.min(body.limit ?? 5, 10);
     const force = !!body.force;
     const forceImage = !!body.force_image;
+    const doLessons = !!body.lessons;
     const onlySlug = body.slug as string | undefined;
 
     let q = admin.from("courses").select("id, slug, cover_image_url").eq("is_published", true);
@@ -246,13 +247,17 @@ Deno.serve(async (req) => {
     const { data: courses, error } = await q.order("cover_image_url", { ascending: true, nullsFirst: true }).order("created_at", { ascending: true });
     if (error) throw error;
 
-    const results = [];
+    const results: any[] = [];
     let processed = 0;
     for (const c of courses || []) {
       if (processed >= limit) break;
       try {
-        const r = await processCourse(admin, c, force, forceImage);
-        if (r.status === "skipped") continue;
+        const r: any = await processCourse(admin, c, force, forceImage);
+        if (doLessons) {
+          r.lessons_updated = await regenerateLessonsForCourse(admin, c.id);
+          r.status = "done";
+        }
+        if (r.status === "skipped" && !doLessons) continue;
         results.push(r);
         processed++;
       } catch (e: any) {
@@ -260,6 +265,16 @@ Deno.serve(async (req) => {
         processed++;
       }
     }
+    return new Response(JSON.stringify({ processed, results }, null, 2), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (e: any) {
+    return new Response(JSON.stringify({ error: String(e?.message || e) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
     return new Response(JSON.stringify({ processed, results }, null, 2), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
