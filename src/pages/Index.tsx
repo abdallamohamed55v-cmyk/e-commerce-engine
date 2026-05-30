@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import SiteShell from "@/components/SiteShell";
 import { useLang } from "@/hooks/useLang";
-import { courses, CATEGORIES } from "@/content";
-import { getCourseImage } from "@/content/courseImages";
+import { useDbCourses } from "@/hooks/useDbCourses";
+import { CATEGORIES } from "@/lib/courses-db";
 
 const HERO_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4";
@@ -11,9 +11,10 @@ const HERO_VIDEO =
 export default function Index() {
   const lang = useLang();
   const isAr = lang === "ar";
+  const { data: courses = [] } = useDbCourses(lang);
 
   const featured = courses.slice(0, 6);
-  const totalLessons = courses.reduce((s, c) => s + c.lessons.length, 0);
+  const totalLessons = courses.reduce((s, c) => s + c.lessonCount, 0);
   const totalHours = Math.round(
     courses.reduce((s, c) => s + c.durationMinutes, 0) / 60
   );
