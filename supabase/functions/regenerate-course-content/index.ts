@@ -45,10 +45,11 @@ async function generateMeta(rawTitle: string, rawDesc: string, slug: string, fir
 
 STRICT RULES:
 - NEVER mention any person's name, YouTuber, channel name, organisation, university, "in Arabic", "بالعربي", "free", episode counts, or the source platform.
+- NEVER use emoji or symbol characters anywhere in titles, taglines, or descriptions.
 - Title must be short (3-7 words), descriptive of the SUBJECT only.
 - Tagline: one punchy line (max 90 chars).
 - Description: 2-3 sentences, focused on what the learner will gain.
-- Also produce an English image_prompt describing a sleek modern editorial cover image for this course (NO TEXT in the image, no logos, no people's faces, just an evocative abstract / object / scene with rich lighting on a dark background).
+- image_prompt: subject only (no style words) — a cartoon magazine cover illustration of the topic, no book, no text, no people faces.
 
 RAW DATA:
 slug: ${slug}
@@ -70,9 +71,10 @@ Return ONLY a single JSON object, no prose, no markdown fences:
 }
 
 async function generateImage(imagePrompt: string): Promise<Uint8Array> {
+  const styled = `Cartoon-style magazine cover illustration about: ${imagePrompt}. Flat vector cartoon art, bold clean shapes, vivid editorial colors, modern magazine cover composition, NO book, NO open book, NO pages, NO text, NO letters, NO logos, NO real people faces, NO emoji, no frames, single full-bleed illustration filling the canvas.`;
   const j = await callWithRetry("https://ai.gateway.lovable.dev/v1/images/generations", {
     model: "google/gemini-3.1-flash-image-preview",
-    messages: [{ role: "user", content: imagePrompt + ". Editorial dark cinematic cover, no text, no people, no logos." }],
+    messages: [{ role: "user", content: styled }],
     modalities: ["image", "text"],
   }, "image gen");
   const b64 = j.data?.[0]?.b64_json;
@@ -84,7 +86,7 @@ async function generateImage(imagePrompt: string): Promise<Uint8Array> {
 }
 
 
-async function processCourse(admin: any, course: any, force: boolean) {
+async function processCourse(admin: any, course: any, force: boolean, forceImage: boolean) {
   const { data: lessons } = await admin
     .from("lessons")
     .select("id")
@@ -100,57 +102,57 @@ async function processCourse(admin: any, course: any, force: boolean) {
 
   const { data: existingTrans } = await admin
     .from("course_translations")
-    .select("lang_code")
+    .select("lang_code, title, description")
     .eq("course_id", course.id);
   const langs = new Set((existingTrans || []).map((t: any) => t.lang_code));
   const coverIsClean = course.cover_image_url?.includes(`/${BUCKET}/`);
-  if (!force && langs.has("ar") && langs.has("en") && coverIsClean) {
+  const needsMeta = !langs.has("ar") || !langs.has("en") || force;
+  const needsImage = !coverIsClean || force || forceImage;
+  if (!needsMeta && !needsImage) {
     return { slug: course.slug, status: "skipped" };
   }
 
-  // Use any existing translation as seed
-  const { data: seedT } = await admin
-    .from("course_translations")
-    .select("title, description")
-    .eq("course_id", course.id)
-    .limit(1)
-    .maybeSingle();
-  const rawTitle = seedT?.title || course.slug;
-  const rawDesc = seedT?.description || "";
+  let meta: any = null;
+  if (needsMeta) {
+    const seedT: any = (existingTrans || [])[0];
+    const rawTitle = seedT?.title || course.slug;
+    const rawDesc = seedT?.description || "";
+    meta = await generateMeta(rawTitle, rawDesc, course.slug, sampleTitles);
+  }
 
-  const meta = await generateMeta(rawTitle, rawDesc, course.slug, sampleTitles);
+  if (needsImage) {
+    const enT: any = meta || (existingTrans || []).find((t: any) => t.lang_code === "en") || (existingTrans || [])[0];
+    const imagePrompt = meta?.image_prompt
+      || `Abstract subject of "${enT?.title_en || enT?.title || course.slug}"`;
+    const img = await generateImage(imagePrompt);
+    const path = `${course.id}.png`;
+    const up = await admin.storage.from(BUCKET).upload(path, img, {
+      contentType: "image/png",
+      upsert: true,
+    });
+    if (up.error) throw new Error("upload: " + up.error.message);
+    const { data: pub } = admin.storage.from(BUCKET).getPublicUrl(path);
+    const coverUrl = pub.publicUrl + `?v=${Date.now()}`;
+    await admin.from("courses").update({ cover_image_url: coverUrl }).eq("id", course.id);
+  }
 
-  const img = await generateImage(meta.image_prompt || `Abstract cinematic cover representing ${meta.title_en}`);
-  const path = `${course.id}.png`;
-  const up = await admin.storage.from(BUCKET).upload(path, img, {
-    contentType: "image/png",
-    upsert: true,
-  });
-  if (up.error) throw new Error("upload: " + up.error.message);
-  const { data: pub } = admin.storage.from(BUCKET).getPublicUrl(path);
-  const coverUrl = pub.publicUrl;
-
-  await admin.from("courses").update({ cover_image_url: coverUrl }).eq("id", course.id);
-
-  for (const lang of ["ar", "en"] as const) {
-    const row = {
-      course_id: course.id,
-      lang_code: lang,
-      title: lang === "ar" ? meta.title_ar : meta.title_en,
-      tagline: lang === "ar" ? meta.tagline_ar : meta.tagline_en,
-      description: lang === "ar" ? meta.description_ar : meta.description_en,
-    };
-    if (langs.has(lang)) {
-      await admin
-        .from("course_translations")
-        .update(row)
-        .eq("course_id", course.id)
-        .eq("lang_code", lang);
-    } else {
-      await admin.from("course_translations").insert(row);
+  if (meta) {
+    for (const lang of ["ar", "en"] as const) {
+      const row = {
+        course_id: course.id,
+        lang_code: lang,
+        title: lang === "ar" ? meta.title_ar : meta.title_en,
+        tagline: lang === "ar" ? meta.tagline_ar : meta.tagline_en,
+        description: lang === "ar" ? meta.description_ar : meta.description_en,
+      };
+      if (langs.has(lang)) {
+        await admin.from("course_translations").update(row).eq("course_id", course.id).eq("lang_code", lang);
+      } else {
+        await admin.from("course_translations").insert(row);
+      }
     }
   }
-  return { slug: course.slug, status: "done", title_en: meta.title_en };
+  return { slug: course.slug, status: "done" };
 }
 
 Deno.serve(async (req) => {
@@ -160,11 +162,11 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const limit = Math.min(body.limit ?? 5, 10);
     const force = !!body.force;
+    const forceImage = !!body.force_image;
     const onlySlug = body.slug as string | undefined;
 
     let q = admin.from("courses").select("id, slug, cover_image_url").eq("is_published", true);
     if (onlySlug) q = q.eq("slug", onlySlug);
-    // Prefer courses without a clean cover first so we don't waste the budget scanning already-done ones.
     const { data: courses, error } = await q.order("cover_image_url", { ascending: true, nullsFirst: true }).order("created_at", { ascending: true });
     if (error) throw error;
 
@@ -173,7 +175,7 @@ Deno.serve(async (req) => {
     for (const c of courses || []) {
       if (processed >= limit) break;
       try {
-        const r = await processCourse(admin, c, force);
+        const r = await processCourse(admin, c, force, forceImage);
         if (r.status === "skipped") continue;
         results.push(r);
         processed++;
