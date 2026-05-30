@@ -101,57 +101,57 @@ async function processCourse(admin: any, course: any, force: boolean) {
 
   const { data: existingTrans } = await admin
     .from("course_translations")
-    .select("lang_code")
+    .select("lang_code, title, description")
     .eq("course_id", course.id);
   const langs = new Set((existingTrans || []).map((t: any) => t.lang_code));
   const coverIsClean = course.cover_image_url?.includes(`/${BUCKET}/`);
-  if (!force && langs.has("ar") && langs.has("en") && coverIsClean) {
+  const needsMeta = !langs.has("ar") || !langs.has("en") || force;
+  const needsImage = !coverIsClean || force || forceImage;
+  if (!needsMeta && !needsImage) {
     return { slug: course.slug, status: "skipped" };
   }
 
-  // Use any existing translation as seed
-  const { data: seedT } = await admin
-    .from("course_translations")
-    .select("title, description")
-    .eq("course_id", course.id)
-    .limit(1)
-    .maybeSingle();
-  const rawTitle = seedT?.title || course.slug;
-  const rawDesc = seedT?.description || "";
+  let meta: any = null;
+  if (needsMeta) {
+    const seedT: any = (existingTrans || [])[0];
+    const rawTitle = seedT?.title || course.slug;
+    const rawDesc = seedT?.description || "";
+    meta = await generateMeta(rawTitle, rawDesc, course.slug, sampleTitles);
+  }
 
-  const meta = await generateMeta(rawTitle, rawDesc, course.slug, sampleTitles);
+  if (needsImage) {
+    const enT: any = meta || (existingTrans || []).find((t: any) => t.lang_code === "en") || (existingTrans || [])[0];
+    const imagePrompt = meta?.image_prompt
+      || `Abstract subject of "${enT?.title_en || enT?.title || course.slug}"`;
+    const img = await generateImage(imagePrompt);
+    const path = `${course.id}.png`;
+    const up = await admin.storage.from(BUCKET).upload(path, img, {
+      contentType: "image/png",
+      upsert: true,
+    });
+    if (up.error) throw new Error("upload: " + up.error.message);
+    const { data: pub } = admin.storage.from(BUCKET).getPublicUrl(path);
+    const coverUrl = pub.publicUrl + `?v=${Date.now()}`;
+    await admin.from("courses").update({ cover_image_url: coverUrl }).eq("id", course.id);
+  }
 
-  const img = await generateImage(meta.image_prompt || `Abstract cinematic cover representing ${meta.title_en}`);
-  const path = `${course.id}.png`;
-  const up = await admin.storage.from(BUCKET).upload(path, img, {
-    contentType: "image/png",
-    upsert: true,
-  });
-  if (up.error) throw new Error("upload: " + up.error.message);
-  const { data: pub } = admin.storage.from(BUCKET).getPublicUrl(path);
-  const coverUrl = pub.publicUrl;
-
-  await admin.from("courses").update({ cover_image_url: coverUrl }).eq("id", course.id);
-
-  for (const lang of ["ar", "en"] as const) {
-    const row = {
-      course_id: course.id,
-      lang_code: lang,
-      title: lang === "ar" ? meta.title_ar : meta.title_en,
-      tagline: lang === "ar" ? meta.tagline_ar : meta.tagline_en,
-      description: lang === "ar" ? meta.description_ar : meta.description_en,
-    };
-    if (langs.has(lang)) {
-      await admin
-        .from("course_translations")
-        .update(row)
-        .eq("course_id", course.id)
-        .eq("lang_code", lang);
-    } else {
-      await admin.from("course_translations").insert(row);
+  if (meta) {
+    for (const lang of ["ar", "en"] as const) {
+      const row = {
+        course_id: course.id,
+        lang_code: lang,
+        title: lang === "ar" ? meta.title_ar : meta.title_en,
+        tagline: lang === "ar" ? meta.tagline_ar : meta.tagline_en,
+        description: lang === "ar" ? meta.description_ar : meta.description_en,
+      };
+      if (langs.has(lang)) {
+        await admin.from("course_translations").update(row).eq("course_id", course.id).eq("lang_code", lang);
+      } else {
+        await admin.from("course_translations").insert(row);
+      }
     }
   }
-  return { slug: course.slug, status: "done", title_en: meta.title_en };
+  return { slug: course.slug, status: "done" };
 }
 
 Deno.serve(async (req) => {
