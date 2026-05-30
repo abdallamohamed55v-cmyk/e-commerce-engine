@@ -99,13 +99,22 @@ export default function Courses() {
 
       <section className="max-w-7xl mx-auto px-6 sticky top-16 z-20 bg-black/80 backdrop-blur-md border-y border-white/5 py-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            <button
+              onClick={() => setCourseLang(null)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium border border-white/15 bg-white/5 text-white/70 hover:text-white hover:border-white/30 transition"
+              title={isAr ? "تغيير اللغة" : "Change language"}
+            >
+              {courseLang === "ar" ? (isAr ? "العربية" : "Arabic") : isAr ? "الإنجليزية" : "English"}
+              <span className="ms-1.5 text-white/40">↺</span>
+            </button>
+            <span className="w-px h-5 bg-white/10 mx-1" />
             <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
               {isAr ? "الكل" : "All"}
-              <span className="text-white/40 ms-1.5">{courses.length}</span>
+              <span className="text-white/40 ms-1.5">{langFiltered.length}</span>
             </FilterPill>
             {CATEGORIES.map((cat) => {
-              const count = courses.filter((c) => c.category === cat.key).length;
+              const count = langFiltered.filter((c) => c.category === cat.key).length;
               if (count === 0) return null;
               return (
                 <FilterPill
@@ -119,6 +128,7 @@ export default function Courses() {
               );
             })}
           </div>
+
 
           <div className="md:w-72">
             <input
@@ -215,6 +225,42 @@ function FilterPill({
       }`}
     >
       {children}
+    </button>
+  );
+}
+
+function LangCard({
+  title,
+  subtitle,
+  count,
+  isLoading,
+  onClick,
+  dir,
+}: {
+  title: string;
+  subtitle: string;
+  count: number;
+  isLoading: boolean;
+  onClick: () => void;
+  dir: "ltr" | "rtl";
+}) {
+  return (
+    <button
+      onClick={onClick}
+      dir={dir}
+      className="group relative text-start p-8 rounded-3xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition" />
+      <div className="relative">
+        <div className="text-4xl md:text-5xl font-light tracking-tighter">{title}</div>
+        <div className="mt-3 text-sm text-white/55">{subtitle}</div>
+        <div className="mt-8 flex items-center justify-between">
+          <span className="text-xs uppercase tracking-wider text-white/40">
+            {isLoading ? "…" : `${count} ${dir === "rtl" ? "كورس" : "courses"}`}
+          </span>
+          <span className="text-white/40 group-hover:text-white transition text-lg">→</span>
+        </div>
+      </div>
     </button>
   );
 }
