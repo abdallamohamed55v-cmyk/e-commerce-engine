@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.seed-youtube-courses]
 verify_jwt = false
+
+[functions.regenerate-course-content]
+verify_jwt = false
