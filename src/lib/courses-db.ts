@@ -15,6 +15,7 @@ export interface CourseSummary {
   tagline: string | null;
   description: string;
   lessonCount: number;
+  availableLangs: Lang[];
 }
 
 export interface LessonRow {
@@ -91,6 +92,9 @@ export async function fetchCourseSummaries(lang: Lang): Promise<CourseSummary[]>
       const map = transByCourse.get(c.id);
       const t = map?.get(lang) || map?.get("ar") || map?.get("en");
       if (!t) return null;
+      const availableLangs: Lang[] = [];
+      if (map?.has("ar")) availableLangs.push("ar");
+      if (map?.has("en")) availableLangs.push("en");
       return {
         id: c.id,
         slug: c.slug,
@@ -103,6 +107,7 @@ export async function fetchCourseSummaries(lang: Lang): Promise<CourseSummary[]>
         tagline: t.tagline,
         description: t.description,
         lessonCount: countByCourse.get(c.id) || 0,
+        availableLangs,
       } as CourseSummary;
     })
     .filter((x): x is CourseSummary => x !== null);
