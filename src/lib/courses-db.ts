@@ -72,8 +72,9 @@ export async function fetchCourseSummaries(lang: Lang): Promise<CourseSummary[]>
       .from("course_translations")
       .select("course_id, lang_code, title, tagline, description")
       .in("course_id", ids),
-    supabase.from("lessons").select("course_id").in("course_id", ids),
+    supabase.from("lessons").select("course_id").in("course_id", ids).limit(10000),
   ]);
+
 
   const transByCourse = new Map<string, Map<string, any>>();
   (trans || []).forEach((t) => {
