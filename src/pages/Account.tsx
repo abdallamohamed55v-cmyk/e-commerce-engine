@@ -35,7 +35,7 @@ export default function Account() {
   if (!user) return <Navigate to="/auth?redirect=/account" />;
 
   const totalDone = progress.length;
-  const totalLessons = courses.reduce((acc, c) => acc + c.lessons.length, 0);
+  const totalLessons = courses.reduce((acc, c) => acc + c.lessonCount, 0);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
