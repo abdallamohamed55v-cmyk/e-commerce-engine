@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { getLesson } from "@/content";
+import { useDbCourse } from "@/hooks/useDbCourses";
 import { useLang } from "@/hooks/useLang";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -15,27 +14,28 @@ export default function LessonView() {
   const isAr = lang === "ar";
   const { user, loading } = useAuth();
   const { active, loading: subscriptionLoading } = useSubscription();
-  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
-  const [showResults, setShowResults] = useState(false);
+  const { data: course, isLoading: courseLoading } = useDbCourse(slug, lang);
 
-  const data = getLesson(slug || "", lessonSlug || "");
-  if (!data) return <Navigate to="/courses" />;
-  if (loading || subscriptionLoading || active === null)
+  if (loading || subscriptionLoading || courseLoading || active === null) {
     return (
       <SiteShell>
-        <div className="p-20 text-center text-white/50 text-sm">Loading...</div>
+        <div className="p-20 text-center text-white/50 text-sm">
+          {isAr ? "جاري التحميل..." : "Loading..."}
+        </div>
       </SiteShell>
     );
-  if (!user)
-    return <Navigate to={`/auth?redirect=/courses/${slug}/lessons/${lessonSlug}`} />;
+  }
+  if (!course) return <Navigate to="/courses" />;
+  if (!user) return <Navigate to={`/auth?redirect=/courses/${slug}/lessons/${lessonSlug}`} />;
   if (!active) return <Navigate to="/pricing" />;
 
-  const { course, lesson, prev, next, index, total } = data;
-  const lc = lesson[lang];
-  const score = lesson.quiz.reduce(
-    (acc, q, i) => acc + (quizAnswers[i] === q.correctIndex ? 1 : 0),
-    0
-  );
+  const index = course.lessons.findIndex((l) => l.slug === lessonSlug);
+  if (index === -1) return <Navigate to={`/courses/${course.slug}`} />;
+  const lesson = course.lessons[index];
+  const prev = course.lessons[index - 1] ?? null;
+  const next = course.lessons[index + 1] ?? null;
+  const total = course.lessons.length;
+  const progressPct = Math.round(((index + 1) / total) * 100);
 
   const handleComplete = async () => {
     await supabase.from("lesson_progress").upsert(
@@ -43,35 +43,26 @@ export default function LessonView() {
         user_id: user.id,
         course_slug: course.slug,
         lesson_slug: lesson.slug,
-        quiz_score: showResults ? score : null,
       },
       { onConflict: "user_id,course_slug,lesson_slug" }
     );
     toast({ title: isAr ? "تم!" : "Done!" });
-    if (next)
-      window.location.href = `/courses/${course.slug}/lessons/${next.slug}`;
+    if (next) window.location.href = `/courses/${course.slug}/lessons/${next.slug}`;
     else window.location.href = `/courses/${course.slug}`;
   };
 
-  const video = lesson.video?.[lang] || lesson.video?.en || lesson.video?.ar;
-  const progressPct = Math.round(((index + 1) / total) * 100);
-
   return (
     <SiteShell>
-      {/* Progress bar */}
       <div className="sticky top-16 z-30 bg-black/80 backdrop-blur border-b border-white/5">
         <div className="max-w-4xl mx-auto px-6 py-3 flex items-center gap-4">
           <Link
             to={`/courses/${course.slug}`}
             className="text-xs text-white/60 hover:text-white truncate"
           >
-            {course[lang].title}
+            {course.title}
           </Link>
           <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-400 transition-all"
-              style={{ width: `${progressPct}%` }}
-            />
+            <div className="h-full bg-blue-400 transition-all" style={{ width: `${progressPct}%` }} />
           </div>
           <span className="text-xs text-white/50 tabular-nums shrink-0">
             {index + 1}/{total}
@@ -83,110 +74,44 @@ export default function LessonView() {
         <p className="text-[11px] uppercase tracking-[0.25em] text-blue-400/80">
           {isAr ? "درس" : "Lesson"} {String(index + 1).padStart(2, "0")}
         </p>
-        <h1 className="mt-3 text-3xl md:text-4xl tracking-tighter font-light">
-          {lc.title}
-        </h1>
-        {lc.summary && (
-          <p className="mt-3 text-white/60 leading-relaxed">{lc.summary}</p>
+        <h1 className="mt-3 text-3xl md:text-4xl tracking-tighter font-light">{lesson.title}</h1>
+        {lesson.summary && (
+          <p className="mt-3 text-white/60 leading-relaxed">{lesson.summary}</p>
         )}
 
-        {video && (
+        {lesson.videoId && (
           <div className="mt-8 space-y-2">
             <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black border border-white/5">
               <iframe
                 className="w-full h-full"
-                src={`https://www.youtube.com/embed/${video.youtubeId}`}
-                title={lc.title}
+                src={`https://www.youtube.com/embed/${lesson.videoId}`}
+                title={lesson.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
             </div>
-            <p className="text-xs text-white/40">
-              {isAr ? "المصدر:" : "Source:"}{" "}
-              <a
-                href={video.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-white/70"
-              >
-                {video.sourceName}
-              </a>
-            </p>
+            {lesson.videoUrl && (
+              <p className="text-xs text-white/40">
+                {isAr ? "المصدر:" : "Source:"}{" "}
+                <a
+                  href={lesson.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-white/70"
+                >
+                  YouTube
+                </a>
+              </p>
+            )}
           </div>
         )}
 
-        <div className="prose prose-invert prose-sm md:prose-base max-w-none mt-10 prose-headings:font-light prose-headings:tracking-tight prose-a:text-blue-400">
-          <ReactMarkdown>{lc.content}</ReactMarkdown>
-        </div>
-
-        {/* Quiz */}
-        <section className="mt-12 rounded-3xl border border-white/10 bg-white/[0.02] p-6 md:p-8 space-y-6">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-blue-400/80">
-              {isAr ? "اختبار سريع" : "Quick quiz"}
-            </p>
-            <h2 className="text-xl font-light tracking-tight mt-1">
-              {isAr ? "اختبر فهمك" : "Test your understanding"}
-            </h2>
+        {lesson.contentMarkdown && lesson.contentMarkdown.trim().length > 0 && (
+          <div className="prose prose-invert prose-sm md:prose-base max-w-none mt-10 prose-headings:font-light prose-headings:tracking-tight prose-a:text-blue-400">
+            <ReactMarkdown>{lesson.contentMarkdown}</ReactMarkdown>
           </div>
-          {lesson.quiz.map((q, qi) => {
-            const ql = q[lang];
-            return (
-              <div key={qi} className="space-y-3">
-                <p className="text-sm font-medium">
-                  {qi + 1}. {ql.question}
-                </p>
-                <div className="space-y-2">
-                  {ql.options.map((opt, oi) => {
-                    const selected = quizAnswers[qi] === oi;
-                    const correct = showResults && oi === q.correctIndex;
-                    const wrong = showResults && selected && oi !== q.correctIndex;
-                    return (
-                      <button
-                        key={oi}
-                        onClick={() =>
-                          !showResults && setQuizAnswers({ ...quizAnswers, [qi]: oi })
-                        }
-                        className={`w-full text-start p-3 rounded-xl border text-sm transition ${
-                          correct
-                            ? "border-green-400/50 bg-green-400/10"
-                            : wrong
-                            ? "border-red-400/50 bg-red-400/10"
-                            : selected
-                            ? "border-blue-400/60 bg-blue-400/10"
-                            : "border-white/10 hover:border-white/25 hover:bg-white/[0.04]"
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
-                </div>
-                {showResults && (
-                  <p className="text-xs text-white/50">{ql.explanation}</p>
-                )}
-              </div>
-            );
-          })}
-          {!showResults ? (
-            <button
-              onClick={() => setShowResults(true)}
-              disabled={Object.keys(quizAnswers).length !== lesson.quiz.length}
-              className="px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isAr ? "تحقق من الإجابات" : "Check answers"}
-            </button>
-          ) : (
-            <div className="text-sm">
-              <span className="text-white/60">{isAr ? "النتيجة:" : "Score:"}</span>{" "}
-              <span className="font-medium">
-                {score}/{lesson.quiz.length}
-              </span>
-            </div>
-          )}
-        </section>
+        )}
 
-        {/* Navigation */}
         <div className="mt-10 flex justify-between items-center gap-3">
           {prev ? (
             <Link
