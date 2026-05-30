@@ -182,5 +182,6 @@ export async function fetchCourse(slug: string, lang: Lang): Promise<CourseDetai
     prerequisites: Array.isArray(t.prerequisites) ? t.prerequisites : [],
     lessons: mappedLessons,
     lessonCount: mappedLessons.length,
+    availableLangs: (["ar", "en"] as Lang[]).filter((l) => transMap.has(l)),
   };
 }
