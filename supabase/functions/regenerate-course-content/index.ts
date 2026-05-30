@@ -85,6 +85,82 @@ async function generateImage(imagePrompt: string): Promise<Uint8Array> {
   return bytes;
 }
 
+async function generateLessonBatch(courseTitleEn: string, items: { id: string; raw_title: string }[]) {
+  const prompt = `You are rewriting lesson metadata for an online course titled "${courseTitleEn}".
+For EACH lesson below, produce clean bilingual (ar + en) content:
+- title: short subject-only phrase (3-8 words). NO author/channel/YouTuber/person names, NO "in Arabic", NO "بالعربي", NO "free", NO episode numbers, NO emoji.
+- summary: one sentence (max 140 chars) describing what the learner gets from this lesson.
+- content_markdown: a clean educational explanation in markdown (200-350 words), well structured with a short intro, 2-4 H2 or bullet sections, and a one-line takeaway. NO emoji. NO references to videos, channels, instructors, or external links. Written as original teaching text.
+
+Lessons (id -> raw title):
+${items.map((l) => `${l.id} :: ${l.raw_title}`).join("\n")}
+
+Return ONLY a JSON object of this exact shape, no prose, no fences:
+{"lessons":[{"id":"<id>","title_ar":"","summary_ar":"","content_ar":"","title_en":"","summary_en":"","content_en":""}]}`;
+  const j = await callWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    model: "google/gemini-3-flash-preview",
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+  }, "lesson batch");
+  const content = j.choices?.[0]?.message?.content || "{}";
+  let parsed: any;
+  try { parsed = JSON.parse(content); } catch { parsed = extractJson(content); }
+  return parsed.lessons || [];
+}
+
+async function regenerateLessonsForCourse(admin: any, courseId: string, batchSize = 8) {
+  const { data: enT } = await admin.from("course_translations").select("title").eq("course_id", courseId).eq("lang_code", "en").maybeSingle();
+  const courseTitle = enT?.title || "Course";
+  const { data: lessons } = await admin
+    .from("lessons")
+    .select("id, sort_order")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true });
+  const lessonIds = (lessons || []).map((l: any) => l.id);
+  const { data: trans } = await admin
+    .from("lesson_translations")
+    .select("lesson_id, lang_code, title")
+    .in("lesson_id", lessonIds);
+  const byLesson = new Map<string, { en?: any; ar?: any }>();
+  for (const t of trans || []) {
+    const e = byLesson.get(t.lesson_id) || {};
+    (e as any)[t.lang_code] = t;
+    byLesson.set(t.lesson_id, e);
+  }
+  const items = lessonIds.map((id: string) => ({ id, raw_title: byLesson.get(id)?.en?.title || byLesson.get(id)?.ar?.title || "" }));
+  let updated = 0;
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    try {
+      const out = await generateLessonBatch(courseTitle, batch);
+      for (const row of out) {
+        const lid = row.id;
+        if (!lid) continue;
+        const existing = byLesson.get(lid) || {};
+        for (const lang of ["ar", "en"] as const) {
+          const payload = {
+            lesson_id: lid,
+            lang_code: lang,
+            title: lang === "ar" ? row.title_ar : row.title_en,
+            summary: lang === "ar" ? row.summary_ar : row.summary_en,
+            content_markdown: lang === "ar" ? row.content_ar : row.content_en,
+          };
+          if (!payload.title || !payload.content_markdown) continue;
+          if ((existing as any)[lang]) {
+            await admin.from("lesson_translations").update(payload).eq("lesson_id", lid).eq("lang_code", lang);
+          } else {
+            await admin.from("lesson_translations").insert(payload);
+          }
+        }
+        updated++;
+      }
+    } catch (e) {
+      console.log("batch err", String((e as any)?.message || e));
+    }
+  }
+  return updated;
+}
+
 
 async function processCourse(admin: any, course: any, force: boolean, forceImage: boolean) {
   const { data: lessons } = await admin
