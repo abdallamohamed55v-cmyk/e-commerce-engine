@@ -70,9 +70,10 @@ Return ONLY a single JSON object, no prose, no markdown fences:
 }
 
 async function generateImage(imagePrompt: string): Promise<Uint8Array> {
+  const styled = `Cartoon-style magazine cover illustration about: ${imagePrompt}. Flat vector cartoon art, bold clean shapes, vivid editorial colors, modern magazine cover composition, NO book, NO open book, NO pages, NO text, NO letters, NO logos, NO real people faces, NO emoji, no frames, single full-bleed illustration filling the canvas.`;
   const j = await callWithRetry("https://ai.gateway.lovable.dev/v1/images/generations", {
     model: "google/gemini-3.1-flash-image-preview",
-    messages: [{ role: "user", content: imagePrompt + ". Editorial dark cinematic cover, no text, no people, no logos." }],
+    messages: [{ role: "user", content: styled }],
     modalities: ["image", "text"],
   }, "image gen");
   const b64 = j.data?.[0]?.b64_json;
