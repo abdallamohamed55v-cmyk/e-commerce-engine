@@ -2,7 +2,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useMemo, useRef, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Sparkles, X } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface LessonTutorProps {
