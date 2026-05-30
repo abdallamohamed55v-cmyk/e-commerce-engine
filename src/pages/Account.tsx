@@ -12,6 +12,7 @@ export default function Account() {
   const isAr = lang === "ar";
   const { user, loading } = useAuth();
   const { subscription, loading: subscriptionLoading } = useSubscription();
+  const { data: courses = [] } = useDbCourses(lang);
   const [progress, setProgress] = useState<any[]>([]);
 
   useEffect(() => {
