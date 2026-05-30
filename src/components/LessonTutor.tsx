@@ -83,15 +83,13 @@ export default function LessonTutor({ courseSlug, lessonSlug, lessonTitle, lang 
       dir={isAr ? "rtl" : "ltr"}
     >
       <header className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/5">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-blue-400" />
-          <div>
-            <p className="text-sm font-medium text-white">
-              {isAr ? "المدرس الذكي" : "AI Tutor"}
-            </p>
-            <p className="text-[10px] text-white/40 truncate max-w-[200px]">{lessonTitle}</p>
-          </div>
+        <div>
+          <p className="text-sm font-medium text-white">
+            {isAr ? "المدرس الذكي" : "AI Tutor"}
+          </p>
+          <p className="text-[10px] text-white/40 truncate max-w-[200px]">{lessonTitle}</p>
         </div>
+
         <button
           onClick={() => setOpen(false)}
           className="p-1.5 rounded-full hover:bg-white/10 text-white/60"
