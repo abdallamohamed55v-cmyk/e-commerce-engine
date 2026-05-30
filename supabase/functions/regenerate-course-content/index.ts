@@ -14,6 +14,32 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const BUCKET = "course-covers";
 
+async function callWithRetry(url: string, body: any, label: string): Promise<any> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Lovable-API-Key": LOVABLE_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (r.ok) return r.json();
+    const txt = await r.text();
+    if (r.status === 429 || r.status >= 500) {
+      const wait = 4000 * (attempt + 1);
+      console.log(`${label} ${r.status}, retry in ${wait}ms`);
+      await new Promise((res) => setTimeout(res, wait));
+      continue;
+    }
+    throw new Error(`${label} ${r.status}: ${txt}`);
+  }
+  throw new Error(`${label} exhausted retries`);
+}
+
+function extractJson(s: string): any {
+  const m = s.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error("no JSON object in model output");
+  return JSON.parse(m[0]);
+}
+
 async function generateMeta(rawTitle: string, rawDesc: string, slug: string, firstLessonTitles: string[]) {
   const prompt = `You receive raw metadata of an online video course (which may include the original author / channel / YouTuber name, or words like "Arabic", "بالعربي", episode counts, etc.). Produce a clean, branded course package in BOTH Arabic and English.
 
@@ -31,36 +57,24 @@ description: ${rawDesc.slice(0, 600)}
 sample lessons:
 ${firstLessonTitles.slice(0, 5).map((t, i) => `${i + 1}. ${t}`).join("\n")}
 
-Return ONLY JSON:
+Return ONLY a single JSON object, no prose, no markdown fences:
 {"title_ar":"","tagline_ar":"","description_ar":"","title_en":"","tagline_en":"","description_en":"","image_prompt":""}`;
 
-  const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { "Lovable-API-Key": LOVABLE_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-    }),
-  });
-  if (!r.ok) throw new Error(`meta gen ${r.status}: ${await r.text()}`);
-  const j = await r.json();
+  const j = await callWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    model: "google/gemini-3-flash-preview",
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+  }, "meta gen");
   const content = j.choices?.[0]?.message?.content || "{}";
-  return JSON.parse(content);
+  try { return JSON.parse(content); } catch { return extractJson(content); }
 }
 
 async function generateImage(imagePrompt: string): Promise<Uint8Array> {
-  const r = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
-    method: "POST",
-    headers: { "Lovable-API-Key": LOVABLE_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-3.1-flash-image-preview",
-      messages: [{ role: "user", content: imagePrompt + ". Editorial dark cinematic cover, no text, no people, no logos." }],
-      modalities: ["image", "text"],
-    }),
-  });
-  if (!r.ok) throw new Error(`image gen ${r.status}: ${await r.text()}`);
-  const j = await r.json();
+  const j = await callWithRetry("https://ai.gateway.lovable.dev/v1/images/generations", {
+    model: "google/gemini-3.1-flash-image-preview",
+    messages: [{ role: "user", content: imagePrompt + ". Editorial dark cinematic cover, no text, no people, no logos." }],
+    modalities: ["image", "text"],
+  }, "image gen");
   const b64 = j.data?.[0]?.b64_json;
   if (!b64) throw new Error("no image returned");
   const bin = atob(b64);
@@ -68,6 +82,7 @@ async function generateImage(imagePrompt: string): Promise<Uint8Array> {
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return bytes;
 }
+
 
 async function processCourse(admin: any, course: any, force: boolean) {
   const { data: lessons } = await admin
