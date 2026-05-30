@@ -30,7 +30,7 @@ function parseDuration(iso: string): number {
   return Math.max(1, Math.round((+(m[1] || 0)) * 60 + (+(m[2] || 0)) + (+(m[3] || 0)) / 60));
 }
 
-async function importPlaylist(admin: any, apiKey: string, playlistId: string, level: string) {
+async function importPlaylist(admin: any, apiKey: string, playlistId: string, level: string, lang: string = "ar") {
   const plRes = await fetch(`${YT_API}/playlists?part=snippet&id=${playlistId}&key=${apiKey}`);
   const plJson = await plRes.json();
   if (!plRes.ok || !plJson.items?.length) return { playlistId, status: "not_found" };
@@ -87,7 +87,7 @@ async function importPlaylist(admin: any, apiKey: string, playlistId: string, le
   if (cErr) return { playlistId, status: "course_error", error: cErr.message };
 
   await admin.from("course_translations").insert({
-    course_id: course.id, lang_code: "ar", title, description: desc,
+    course_id: course.id, lang_code: lang, title, description: desc,
   });
 
   for (let i = 0; i < meta.length; i++) {
@@ -104,7 +104,7 @@ async function importPlaylist(admin: any, apiKey: string, playlistId: string, le
     }).select().single();
     if (lesson) {
       await admin.from("lesson_translations").insert({
-        lesson_id: lesson.id, lang_code: "ar",
+        lesson_id: lesson.id, lang_code: lang,
         title: v.title,
         summary: v.description.slice(0, 280),
         content_markdown: v.description || v.title,
@@ -122,9 +122,9 @@ Deno.serve(async (req) => {
     if (!apiKey) throw new Error("YOUTUBE_API_KEY not configured");
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const body = await req.json().catch(() => ({}));
-    const playlists: { id: string; level: string }[] = body.playlists?.length ? body.playlists : CURATED_PLAYLISTS;
+    const playlists: { id: string; level: string; lang?: string }[] = body.playlists?.length ? body.playlists : CURATED_PLAYLISTS;
     const results = [];
-    for (const p of playlists) results.push(await importPlaylist(admin, apiKey, p.id, p.level));
+    for (const p of playlists) results.push(await importPlaylist(admin, apiKey, p.id, p.level, p.lang || "ar"));
     return new Response(JSON.stringify({ success: true, results }, null, 2), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
