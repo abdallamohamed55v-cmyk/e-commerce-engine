@@ -1,19 +1,36 @@
 import { Link } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { CATEGORIES, type CourseCategory } from "@/lib/courses-db";
 import { useDbCourses } from "@/hooks/useDbCourses";
 import { useLang } from "@/hooks/useLang";
 import SiteShell from "@/components/SiteShell";
+
+type CourseLang = "ar" | "en";
+const LS_KEY = "courses_lang_pref";
 
 export default function Courses() {
   const lang = useLang();
   const isAr = lang === "ar";
   const [filter, setFilter] = useState<CourseCategory | "all">("all");
   const [query, setQuery] = useState("");
+  const [courseLang, setCourseLang] = useState<CourseLang | null>(() => {
+    if (typeof window === "undefined") return null;
+    const v = localStorage.getItem(LS_KEY);
+    return v === "ar" || v === "en" ? v : null;
+  });
   const { data: courses = [], isLoading } = useDbCourses(lang);
 
+  useEffect(() => {
+    if (courseLang) localStorage.setItem(LS_KEY, courseLang);
+  }, [courseLang]);
+
+  const langFiltered = useMemo(
+    () => (courseLang ? courses.filter((c) => c.availableLangs.includes(courseLang)) : []),
+    [courses, courseLang]
+  );
+
   const visible = useMemo(() => {
-    const base = filter === "all" ? courses : courses.filter((c) => c.category === filter);
+    const base = filter === "all" ? langFiltered : langFiltered.filter((c) => c.category === filter);
     if (!query.trim()) return base;
     const q = query.toLowerCase();
     return base.filter(
@@ -21,12 +38,51 @@ export default function Courses() {
         c.title.toLowerCase().includes(q) ||
         (c.tagline || "").toLowerCase().includes(q)
     );
-  }, [filter, query, courses]);
+  }, [filter, query, langFiltered]);
 
   const categoryLabel = (key: CourseCategory) => {
     const c = CATEGORIES.find((x) => x.key === key);
     return c ? (isAr ? c.ar : c.en) : key;
   };
+
+  const arCount = useMemo(() => courses.filter((c) => c.availableLangs.includes("ar")).length, [courses]);
+  const enCount = useMemo(() => courses.filter((c) => c.availableLangs.includes("en")).length, [courses]);
+
+  if (!courseLang) {
+    return (
+      <SiteShell>
+        <section className="max-w-5xl mx-auto px-6 pt-24 pb-20">
+          <h1 className="text-4xl md:text-6xl tracking-tighter font-light max-w-3xl">
+            {isAr ? "اختر لغة الكورسات" : "Choose course language"}
+          </h1>
+          <p className="mt-5 text-white/60 max-w-xl text-base leading-relaxed">
+            {isAr
+              ? "هتشوف الكورسات المتاحة باللغة اللي تختارها فقط."
+              : "You'll see only the courses available in the language you pick."}
+          </p>
+
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <LangCard
+              title={isAr ? "العربية" : "Arabic"}
+              subtitle={isAr ? "كورسات بالعربية" : "Courses in Arabic"}
+              count={arCount}
+              isLoading={isLoading}
+              onClick={() => setCourseLang("ar")}
+              dir="rtl"
+            />
+            <LangCard
+              title={isAr ? "الإنجليزية" : "English"}
+              subtitle={isAr ? "كورسات بالإنجليزية" : "Courses in English"}
+              count={enCount}
+              isLoading={isLoading}
+              onClick={() => setCourseLang("en")}
+              dir="ltr"
+            />
+          </div>
+        </section>
+      </SiteShell>
+    );
+  }
 
   return (
     <SiteShell>
@@ -43,13 +99,22 @@ export default function Courses() {
 
       <section className="max-w-7xl mx-auto px-6 sticky top-16 z-20 bg-black/80 backdrop-blur-md border-y border-white/5 py-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            <button
+              onClick={() => setCourseLang(null)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium border border-white/15 bg-white/5 text-white/70 hover:text-white hover:border-white/30 transition"
+              title={isAr ? "تغيير اللغة" : "Change language"}
+            >
+              {courseLang === "ar" ? (isAr ? "العربية" : "Arabic") : isAr ? "الإنجليزية" : "English"}
+              <span className="ms-1.5 text-white/40">↺</span>
+            </button>
+            <span className="w-px h-5 bg-white/10 mx-1" />
             <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
               {isAr ? "الكل" : "All"}
-              <span className="text-white/40 ms-1.5">{courses.length}</span>
+              <span className="text-white/40 ms-1.5">{langFiltered.length}</span>
             </FilterPill>
             {CATEGORIES.map((cat) => {
-              const count = courses.filter((c) => c.category === cat.key).length;
+              const count = langFiltered.filter((c) => c.category === cat.key).length;
               if (count === 0) return null;
               return (
                 <FilterPill
@@ -63,6 +128,7 @@ export default function Courses() {
               );
             })}
           </div>
+
 
           <div className="md:w-72">
             <input
@@ -159,6 +225,42 @@ function FilterPill({
       }`}
     >
       {children}
+    </button>
+  );
+}
+
+function LangCard({
+  title,
+  subtitle,
+  count,
+  isLoading,
+  onClick,
+  dir,
+}: {
+  title: string;
+  subtitle: string;
+  count: number;
+  isLoading: boolean;
+  onClick: () => void;
+  dir: "ltr" | "rtl";
+}) {
+  return (
+    <button
+      onClick={onClick}
+      dir={dir}
+      className="group relative text-start p-8 rounded-3xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition" />
+      <div className="relative">
+        <div className="text-4xl md:text-5xl font-light tracking-tighter">{title}</div>
+        <div className="mt-3 text-sm text-white/55">{subtitle}</div>
+        <div className="mt-8 flex items-center justify-between">
+          <span className="text-xs uppercase tracking-wider text-white/40">
+            {isLoading ? "…" : `${count} ${dir === "rtl" ? "كورس" : "courses"}`}
+          </span>
+          <span className="text-white/40 group-hover:text-white transition text-lg">→</span>
+        </div>
+      </div>
     </button>
   );
 }
