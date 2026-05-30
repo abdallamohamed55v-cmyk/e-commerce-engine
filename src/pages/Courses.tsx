@@ -25,7 +25,7 @@ export default function Courses() {
   }, [courseLang]);
 
   const langFiltered = useMemo(
-    () => (courseLang ? courses.filter((c) => c.availableLangs.includes(courseLang)) : []),
+    () => (courseLang ? courses.filter((c) => (c.availableLangs || []).includes(courseLang)) : []),
     [courses, courseLang]
   );
 
@@ -45,8 +45,8 @@ export default function Courses() {
     return c ? (isAr ? c.ar : c.en) : key;
   };
 
-  const arCount = useMemo(() => courses.filter((c) => c.availableLangs.includes("ar")).length, [courses]);
-  const enCount = useMemo(() => courses.filter((c) => c.availableLangs.includes("en")).length, [courses]);
+  const arCount = useMemo(() => courses.filter((c) => (c.availableLangs || []).includes("ar")).length, [courses]);
+  const enCount = useMemo(() => courses.filter((c) => (c.availableLangs || []).includes("en")).length, [courses]);
 
   if (!courseLang) {
     return (
